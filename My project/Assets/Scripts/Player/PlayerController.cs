@@ -1,0 +1,369 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Cinemachine;
+using Unity.VisualScripting;
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
+
+
+public enum PlayerState
+{
+    Grounded,
+    InAir,
+    Launched,
+    LedgeGrabbing,
+    Blocking,
+}
+
+public class PlayerController : MonoBehaviour
+{
+    public PlayerState currentState = PlayerState.Grounded;
+
+    [Header("Player in game Stats")] 
+    private float totalDamageTaken;
+    private int stocks;
+
+    [Header("Movement Stats")] 
+    private Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
+    
+    [SerializeField] private float movementSpeed; // Base movementspeed
+    [SerializeField] private float sprintMultiplier; // Multiplies the base movementspeed for a sprint speed
+
+    [SerializeField] private float gravityForce;
+    
+    [SerializeField] private float jumpForce; // Jump strength
+    [SerializeField] private int maxJumps;
+    private int jumpsLeft; // Amount of jumps left
+    
+    [SerializeField] private float dashForce; // Dash Strength
+
+    [Header("Sprint logic")] 
+    [SerializeField] private float doubleTapThreshold; // Time window you have for multi tapping and to start sprinting
+    [SerializeField] private float deadZoneTreshold; // The value that moveInput needs to be to count as a movement input
+    [SerializeField] private float lastTapTime; // Stores the time of the last movement input to detect double taps
+    [SerializeField] private bool isSprinting = false;
+    [SerializeField] private bool wasMovingLastFrame = false; // Flag to check if you moved last frame
+    
+    [Header("Ground Check")]
+    [SerializeField] private LayerMask groundLayer; //is the layer called ground
+    [SerializeField] private float groundCheckDistance;
+    
+    [Header("Attack Logic")]
+    [SerializeField] private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); // List of hitboxes for light attack
+    [SerializeField] private List<HitBoxes> heavyHitboxList = new List<HitBoxes>(); // List of hitboxes for heavy attakcs
+    
+    private Dictionary<string, Collider[]> lightHitboxes = new Dictionary <string, Collider[]> (); // Dictionary to easily call the light hitboxes
+    private Dictionary<string, Collider[]> heavyHitboxes = new Dictionary <string, Collider[]> (); // Dictionary to easily call the heavy hitboxes
+
+    [SerializeField] private List<AttackData> attackData = new List<AttackData>();
+    
+    [Header("Camera Control")]
+    [SerializeField] private float cameraFollowWeight;
+    [SerializeField] private float cameraFollowRadius;
+
+    [Header("Lerp Smoothing")] 
+    [SerializeField] private float rotationSpeed;
+    
+    [Header("Component references")]
+    [SerializeField] private Rigidbody rb;
+  
+    private void Awake()
+    {
+         rb = GetComponent<Rigidbody>();
+         ResetJumps();
+         
+         foreach (var pair in lightHitboxList)
+         {
+             if (!lightHitboxes.ContainsKey(pair.colliderName))
+             {
+                lightHitboxes[pair.colliderName] = pair.collider;
+             }
+         }
+         foreach (var pair in heavyHitboxList)
+         {
+             if (!heavyHitboxes.ContainsKey(pair.colliderName))
+             {
+                 heavyHitboxes[pair.colliderName] = pair.collider;
+             }
+         }
+    }
+
+    private void Start()
+    { 
+        // probably need to fully change camera behaviour but will do that at home
+       
+    }
+
+    private void Update() 
+    {
+        IsGrounded();
+        LedgeGrab();
+    } 
+
+    private void FixedUpdate()  // Use FixedUpdate for physics
+    {
+        Move();
+        ApplyGravity();
+    }
+
+    #region Movement
+    
+    private void ApplyGravity()
+    {
+        if (currentState != PlayerState.Grounded && currentState != PlayerState.LedgeGrabbing) // Apply gravity only if not grounded
+        {
+            rb.AddForce(Vector3.down * gravityForce, ForceMode.Acceleration);
+        }
+    }
+    private void Move()
+    {
+        
+        switch (currentState)
+        {
+            case PlayerState.Grounded:
+                float speed = isSprinting ? movementSpeed * sprintMultiplier : movementSpeed;
+                rb.velocity = new Vector3(moveInput.x * speed, rb.velocity.y, 0);
+
+                if (Mathf.Abs(moveInput.x) > deadZoneTreshold)
+                {
+                    transform.rotation = Quaternion.LookRotation(new Vector3(moveInput.x, 0, 0));
+                }
+                
+                break;
+            
+            case PlayerState.Launched:
+                // movement logic when launched 
+                
+                break;
+            case PlayerState.InAir:
+                // movement logic when in air (currently same as grounded) 
+                
+                float airSpeed = isSprinting ? movementSpeed * sprintMultiplier : movementSpeed;
+                rb.velocity = new Vector3(moveInput.x * airSpeed, rb.velocity.y, 0);  
+                
+                break;
+            
+        }
+      
+    }
+    public void OnMove(InputAction.CallbackContext ctx)
+    {
+        moveInput = ctx.ReadValue<Vector2>();  // Get X-axis input
+        
+       //print("moveInput: " + moveInput.x);
+        bool isMovingNow = Mathf.Abs(moveInput.x) > deadZoneTreshold;  // Consider movement if input is significant
+
+        if (isMovingNow && !wasMovingLastFrame)  // Detect "new" movement input
+        {
+            float timeSinceLastTap = Time.time - lastTapTime;
+
+            if (timeSinceLastTap <= doubleTapThreshold && currentState == PlayerState.Grounded)
+            {
+                isSprinting = true;
+                Dash(moveInput.x);
+            }
+            else
+            {
+                isSprinting = false;
+            }
+
+            lastTapTime = Time.time;  // Update last tap time
+        }
+
+        wasMovingLastFrame = isMovingNow;  // Store movement state
+    }
+
+    public void OnJump(InputAction.CallbackContext ctx)
+    {
+        switch (currentState)
+        {
+            case PlayerState.Grounded:
+                if (jumpsLeft > 0 && ctx.started)
+                {
+                    jumpsLeft--;
+            
+                    rb.velocity = new Vector3(rb.velocity.y, jumpForce); // Apply vertical jump force
+                }
+                break;
+            case PlayerState.LedgeGrabbing:
+                break;
+        }
+        
+    }
+
+    private void Dash(float direction) // Dash Into the direction of the last double pressed direction
+    {   
+        Vector3 dashDirection = new Vector3(direction, 0, 0);
+        rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
+    }
+
+    private void LedgeGrab()
+    {
+        if (rb.velocity.y < 0 && currentState != PlayerState.LedgeGrabbing)
+        {
+            Vector3 lineDownStart = (transform.position + Vector3.up * 1.2f) + transform.forward;
+            Vector3 lineDownEnd = (transform.position + Vector3.down * 0.8f) + transform.forward;
+            RaycastHit downHit; 
+            Physics.Linecast(lineDownStart, lineDownEnd, out downHit, groundLayer);
+            
+            Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
+            
+            if (downHit.collider != null)
+            {
+                Vector3 lineForwardStart = new Vector3(transform.position.x, downHit.point.y, transform.position.z); 
+                Vector3 lineForwardEnd= new Vector3(transform.position.x, downHit.point.y, transform.position.z) + transform.forward; 
+                RaycastHit forwardHit;
+                Physics.Linecast(lineForwardStart, lineForwardEnd, out forwardHit, groundLayer);
+                
+                Debug.DrawLine(lineForwardStart, lineForwardEnd, Color.green, 2f);
+                if (forwardHit.collider != null)
+                {
+                    rb.velocity = Vector3.zero;
+                    rb.isKinematic = true;
+                    
+                    currentState = PlayerState.LedgeGrabbing;
+                    
+                    Vector3 hangPosition = new Vector3(forwardHit.point.x, downHit.point.y, forwardHit.point.z);
+                    Vector3 targetOffset = transform.forward * -0.1f + transform.up * -0.5f;
+                    
+                    hangPosition += targetOffset;
+                    transform.position = hangPosition;
+                }
+            }
+        }
+    }
+    public void OnDamageTaken(float damage, float knockBack)
+    {
+        totalDamageTaken += damage;
+        
+        // KnockBack logic here
+    }
+
+    private void OnDeath()
+    {
+        stocks--;
+        
+        // play particle and death sound
+    }
+    private void OnCollisionEnter(Collision collision) // Having both a ray and collision detection helps for easier walljump implementation with certain objects
+    {
+        if (collision.gameObject.transform.CompareTag("Wall Jump")) 
+        {
+            ResetJumps();
+        }
+    }
+    
+    private bool IsGrounded()
+    {
+        bool grounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
+        
+        if (grounded)
+        {
+            currentState = PlayerState.Grounded;
+        }
+        else //if (currentState == PlayerState.LedgeGrabbing)
+        {
+            currentState = PlayerState.InAir;
+        }
+      
+        return grounded;
+    }
+    
+    private void ResetJumps()
+    {
+        jumpsLeft = maxJumps;
+    }
+    #endregion
+
+    #region Combat Logic
+
+    public void OnLightAttack(InputAction.CallbackContext ctx)
+    {
+        string direction = GetAttackDirection(moveInput);
+        string moveName = $"{currentState.ToString()} {direction}";
+        
+        if (!lightHitboxes.TryGetValue(moveName, out Collider[] colliders))
+        {
+            Debug.LogWarning($"{moveName} does not exist");
+            return;
+        }
+        
+        AttackData currentAttack = attackData.Find(attack => attack.attackName == moveName);
+        
+        if (currentAttack != null)
+        {
+            PerformAttack(currentAttack, colliders);
+        }
+        else
+        {
+            Debug.LogWarning($"No attack data found for {moveName}");
+        }
+        
+        print(moveName);
+    }
+    
+    public void OnHeavytAttack(InputAction.CallbackContext ctx)
+    {
+        string direction = GetAttackDirection(moveInput);
+        string moveName = $"{currentState.ToString()} {direction}";
+        
+        if (!heavyHitboxes.TryGetValue(moveName, out Collider[] colliders))
+        {
+            Debug.LogWarning($"{moveName} does not exist");
+            return;
+        }
+        
+        AttackData currentAttack = attackData.Find(attack => attack.attackName == moveName);
+        
+        if (currentAttack != null)
+        {
+            PerformAttack(currentAttack, colliders);
+        }
+        else
+        {
+            Debug.LogWarning($"No attack data found for {moveName}");
+        }
+        
+        print(moveName);
+        
+    }
+
+    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
+    {
+        return null;
+    }
+    private string GetAttackDirection(Vector2 inputDir)
+    {
+        if (inputDir.magnitude < deadZoneTreshold)
+        {
+             return "Neutral"; // No direction pressed
+        }
+
+        if (Mathf.Abs(inputDir.x) > Mathf.Abs(inputDir.y)) 
+        {
+            return inputDir.x > 0 ? "Right" : "Left";
+        }
+        else 
+        {
+            return inputDir.y > 0 ? "Up" : "Down";
+        }
+    }
+
+    #endregion
+    private void ChangeUI()
+    {
+        
+    }
+    
+    [Serializable]
+    public struct HitBoxes 
+    {
+        public string colliderName;         // Name of the hitbox
+        public Collider[] collider;   // The actual collider
+    }
+}
+
