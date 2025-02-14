@@ -2,7 +2,7 @@
     "name": "Player Inputs",
     "maps": [
         {
-            "name": "Player Movement",
+            "name": "Player Ingame Actions",
             "id": "44e371fc-6b99-4e3e-ba45-4b9c73483a82",
             "actions": [
                 {
@@ -37,6 +37,15 @@
                     "type": "Button",
                     "id": "142676b9-23fc-40b3-a1d8-0ee4ff67f219",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Block",
+                    "type": "PassThrough",
+                    "id": "76cc547b-d095-4eb1-87b2-f1f320b666ad",
+                    "expectedControlType": "DiscreteButton",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -84,6 +93,28 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Heavy Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e4f9d8e5-b763-41ec-9784-a3dac156e3bb",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Block",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b49c574a-ac6d-4c59-9689-c4be3c0c4302",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Block",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

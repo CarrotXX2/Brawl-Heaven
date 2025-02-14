@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Cinemachine;
 using Unity.VisualScripting;
@@ -10,22 +11,30 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 
-public enum PlayerState
+public enum MovementState
 {
     Grounded,
     InAir,
     Launched,
     LedgeGrabbing,
+    
+}
+
+public enum CombatState
+{
+    Neutral,
     Attacking,
     Blocking,
+    Hit,
 }
 
 public class PlayerController : MonoBehaviour
 {
-    public PlayerState currentState = PlayerState.Grounded;
+    public MovementState movementState = MovementState.Grounded;
+    public CombatState combatState = CombatState.Neutral;
 
     [Header("Player in game Stats")] 
-    private float totalDamageTaken;
+    [SerializeField] private float totalDamageTaken;
     private int stocks;
 
     [Header("Movement Stats")] 
@@ -62,6 +71,13 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private List<AttackData> attackData = new List<AttackData>();
     
+    [Header("Blocking Logic")]
+    [SerializeField] private float totalBlockingTime;
+    [SerializeField] private float currentBlockingTime;
+    [SerializeField] private float blockRechargeTime;
+    [SerializeField] private float shieldReductionFactor; // Factor used for calculating the time that needs to be reduced when hit by an attack
+
+    private bool coroutineRunning = false;
     [Header("Camera Control")]
     [SerializeField] private float cameraFollowWeight;
     [SerializeField] private float cameraFollowRadius;
@@ -103,7 +119,10 @@ public class PlayerController : MonoBehaviour
     {
         IsGrounded();
         LedgeGrab();
-    } 
+        Blocking();
+    }
+
+
 
     private void FixedUpdate()  // Use FixedUpdate for physics
     {
@@ -115,17 +134,16 @@ public class PlayerController : MonoBehaviour
     
     private void ApplyGravity()
     {
-        if (currentState != PlayerState.Grounded && currentState != PlayerState.LedgeGrabbing) // Apply gravity only if not grounded
+        if (movementState != MovementState.Grounded && movementState != MovementState.LedgeGrabbing) // Apply gravity only if not grounded
         {
             rb.AddForce(Vector3.down * gravityForce, ForceMode.Acceleration);
         }
     }
     private void Move()
     {
-        
-        switch (currentState)
+        switch (movementState)
         {
-            case PlayerState.Grounded:
+            default:
                 float speed = isSprinting ? movementSpeed * sprintMultiplier : movementSpeed;
                 rb.velocity = new Vector3(moveInput.x * speed, rb.velocity.y, 0);
 
@@ -136,20 +154,11 @@ public class PlayerController : MonoBehaviour
                 
                 break;
             
-            case PlayerState.Launched:
+            case MovementState.Launched:
                 // movement logic when launched 
                 
                 break;
-            case PlayerState.InAir:
-                // movement logic when in air (currently same as grounded) 
-                
-                float airSpeed = isSprinting ? movementSpeed * sprintMultiplier : movementSpeed;
-                rb.velocity = new Vector3(moveInput.x * airSpeed, rb.velocity.y, 0);  
-                
-                break;
-            
         }
-      
     }
     public void OnMove(InputAction.CallbackContext ctx)
     {
@@ -162,7 +171,7 @@ public class PlayerController : MonoBehaviour
         {
             float timeSinceLastTap = Time.time - lastTapTime;
 
-            if (timeSinceLastTap <= doubleTapThreshold && currentState == PlayerState.Grounded)
+            if (timeSinceLastTap <= doubleTapThreshold && movementState == MovementState.Grounded)
             {
                 isSprinting = true;
                 Dash(moveInput.x);
@@ -180,9 +189,9 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
-        switch (currentState)
+        switch (movementState)
         {
-            case PlayerState.Grounded:
+            default:
                 if (jumpsLeft > 0 && ctx.started)
                 {
                     jumpsLeft--;
@@ -190,18 +199,10 @@ public class PlayerController : MonoBehaviour
                     rb.velocity = new Vector3(rb.velocity.y, jumpForce); // Apply vertical jump force
                 }
                 break;
-            case PlayerState.InAir:
-                if (jumpsLeft > 0 && ctx.started)
-                {
-                    jumpsLeft--;
-            
-                    rb.velocity = new Vector3(rb.velocity.y, jumpForce); // Apply vertical jump force
-                }
-                break;
-            case PlayerState.LedgeGrabbing:
+            case MovementState.LedgeGrabbing:
+                // LedgeGrab logic
                 break;
         }
-        
     }
 
     private void Dash(float direction) // Dash Into the direction of the last double pressed direction
@@ -210,33 +211,48 @@ public class PlayerController : MonoBehaviour
        // rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
     }
 
-    private void LedgeGrab()
+    private void LedgeGrab() // Hardcoded and still has issues/isn't finished yet, but low priority for now 
     {
-        if (rb.velocity.y < 0 && currentState != PlayerState.LedgeGrabbing)
+        if (rb.velocity.y < 0 && movementState != MovementState.LedgeGrabbing)
         {
-            Vector3 lineDownStart = (transform.position + Vector3.up * 1.2f) + transform.forward;
-            Vector3 lineDownEnd = (transform.position + Vector3.down * 0.8f) + transform.forward;
-            RaycastHit downHit; 
-            Physics.Linecast(lineDownStart, lineDownEnd, out downHit, groundLayer);
+            Vector3 lineDownStartForward = (transform.position + Vector3.up * 1.2f) + transform.forward;
+            Vector3 lineDownEndForward = (transform.position + Vector3.down * 0.4f) + transform.forward;
             
-            Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
+            Vector3 lineDownStartBehind = (transform.position + Vector3.up * 1.2f) - transform.forward;
+            Vector3 lineDownEndBehind = (transform.position + Vector3.down * 0.4f) - transform.forward;
             
-            if (downHit.collider != null)
+            RaycastHit downHitForward; 
+            RaycastHit downHitBehind; 
+            
+            Physics.Linecast(lineDownStartForward, lineDownEndForward, out downHitForward, groundLayer);
+            Physics.Linecast(lineDownStartBehind, lineDownEndBehind, out downHitBehind, groundLayer);
+            
+            Debug.DrawLine(lineDownStartForward, lineDownEndForward, Color.red, 2f);
+            Debug.DrawLine(lineDownStartBehind, lineDownEndBehind, Color.red, 2f);
+            if (downHitForward.collider != null || downHitBehind.collider != null)
+                
             {
-                Vector3 lineForwardStart = new Vector3(transform.position.x, downHit.point.y, transform.position.z); 
-                Vector3 lineForwardEnd= new Vector3(transform.position.x, downHit.point.y, transform.position.z) + transform.forward; 
+                Vector3 lineForwardStart = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z); 
+                Vector3 lineForwardEnd = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z) + transform.forward; 
+                
+                Vector3 lineBehindStart = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z); 
+                Vector3 lineBehindEnd = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z) - transform.forward; 
+                
                 RaycastHit forwardHit;
+                RaycastHit behindHit;
+                
                 Physics.Linecast(lineForwardStart, lineForwardEnd, out forwardHit, groundLayer);
+                Physics.Linecast(lineForwardStart, lineForwardEnd, out behindHit, groundLayer);
                 
                 Debug.DrawLine(lineForwardStart, lineForwardEnd, Color.green, 2f);
-                if (forwardHit.collider != null)
+                if (forwardHit.collider != null || behindHit.collider != null)
                 {
                     rb.velocity = Vector3.zero;
                     rb.isKinematic = true;
                     
-                    currentState = PlayerState.LedgeGrabbing;
+                    movementState = MovementState.LedgeGrabbing;
                     
-                    Vector3 hangPosition = new Vector3(forwardHit.point.x, downHit.point.y, forwardHit.point.z);
+                    Vector3 hangPosition = new Vector3(forwardHit.point.x, downHitForward.point.y, forwardHit.point.z);
                     Vector3 targetOffset = transform.forward * -0.1f + transform.up * -0.5f;
                     
                     hangPosition += targetOffset;
@@ -260,11 +276,11 @@ public class PlayerController : MonoBehaviour
         
         if (grounded)
         {
-            currentState = PlayerState.Grounded;
+            movementState = MovementState.Grounded;
         }
         else //if (currentState == PlayerState.LedgeGrabbing)
         {
-            currentState = PlayerState.InAir;
+            movementState = MovementState.InAir;
         }
       
         return grounded;
@@ -280,8 +296,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnLightAttack(InputAction.CallbackContext ctx)
     {
+        if (!ctx.started) return;
+        
         string direction = GetAttackDirection(moveInput);
-        string moveName = $"{currentState.ToString()} {direction}";
+        string moveName = $"{movementState.ToString()} {direction}";
         
         if (!lightHitboxes.TryGetValue(moveName, out Collider[] colliders))
         {
@@ -305,8 +323,10 @@ public class PlayerController : MonoBehaviour
     
     public void OnHeavytAttack(InputAction.CallbackContext ctx)
     {
+        if (!ctx.started) return;
+        
         string direction = GetAttackDirection(moveInput);
-        string moveName = $"{currentState.ToString()} {direction}";
+        string moveName = $"{movementState.ToString()} {direction}";
         
         if (!heavyHitboxes.TryGetValue(moveName, out Collider[] colliders))
         {
@@ -326,12 +346,11 @@ public class PlayerController : MonoBehaviour
         }
         
         print(moveName);
-        
     }
 
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
     {   
-        currentState = PlayerState.Attacking;
+        combatState = CombatState.Attacking;
 
         yield return new WaitForSeconds(attackData.startupTime);
 
@@ -357,7 +376,7 @@ public class PlayerController : MonoBehaviour
         foreach (var hit in hitObjects)
         {
             PlayerController player = hit.transform.GetComponent<PlayerController>();
-            player.OnDamageTaken(attackData.damage, attackData.knockback);
+            player.OnHit(attackData.damage, attackData.knockback);
         }
     }
     
@@ -377,12 +396,67 @@ public class PlayerController : MonoBehaviour
             return inputDir.y > 0 ? "Up" : "Down";
         }
     }
-    
-    public void OnDamageTaken(float damage, float knockBack)
+
+    public void OnBlock(InputAction.CallbackContext ctx)
     {
-        totalDamageTaken += damage;
-        print($"Took {damage} damage");
-        // KnockBack logic here
+        if (ctx.performed) // When button is fully pressed
+        {
+            Debug.Log("Blocking started");
+            combatState = CombatState.Blocking;
+        
+            if (coroutineRunning)
+            {
+                StopCoroutine(RechargeBlock());
+                coroutineRunning = false;
+            }
+        }
+
+        if (ctx.canceled) // When button is released
+        {
+            Debug.Log("Blocking ended, starting recharge");
+            StartCoroutine(RechargeBlock());
+            combatState = CombatState.Neutral;
+        }
+    }
+    
+    private void Blocking()
+    {
+        if (combatState != CombatState.Blocking) return;
+        
+        currentBlockingTime -= Time.deltaTime;
+        currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0, totalBlockingTime);
+    }
+
+    private IEnumerator RechargeBlock()
+    {
+        coroutineRunning = true;
+
+        while (currentBlockingTime < totalBlockingTime)
+        {
+            currentBlockingTime = Mathf.MoveTowards(currentBlockingTime, totalBlockingTime, Time.deltaTime * blockRechargeTime);
+            currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0 , totalBlockingTime);
+            yield return null;
+        }
+        
+        coroutineRunning = false;
+    }
+    
+    public void OnHit(float damage, float knockBack)
+    {
+        switch (combatState)
+        {
+            default:
+                totalDamageTaken += damage;
+                print($"Took {damage} damage");
+                    
+                // KnockBack logic here
+                
+                break;
+            case CombatState.Blocking:
+                currentBlockingTime -= damage * shieldReductionFactor;
+                
+                break;
+        }
     }
 
     private void OnDeath()
@@ -392,6 +466,7 @@ public class PlayerController : MonoBehaviour
         {
             // respawn
         }
+        
         // play particle and death sound
     }
 

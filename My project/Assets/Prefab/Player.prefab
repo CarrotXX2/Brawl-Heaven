@@ -50,7 +50,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97ff19ae82107e349baae259553d6d3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 0
+  movementState: 0
+  combatState: 0
+  totalDamageTaken: 0
   movementSpeed: 5
   sprintMultiplier: 1.7
   gravityForce: 20
@@ -67,14 +69,19 @@ MonoBehaviour:
     m_Bits: 8
   groundCheckDistance: 0.6
   lightHitboxList:
-  - colliderName: 
-    collider: []
+  - attackName: Neutral light
+    collider:
+    - {fileID: 0}
   heavyHitboxList:
-  - colliderName: 
+  - attackName: 
     collider: []
-  - colliderName: 
+  - attackName: 
     collider: []
   attackData: []
+  totalBlockingTime: 4
+  currentBlockingTime: 4
+  blockRechargeTime: 1
+  shieldReductionFactor: 0.2
   cameraFollowWeight: 50
   cameraFollowRadius: 20
   rotationSpeed: 100
@@ -169,9 +176,25 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 142676b9-23fc-40b3-a1d8-0ee4ff67f219
     m_ActionName: Player Movement/Heavy Attack[/DualSenseGamepadHID/buttonEast]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7393286490925624216}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnBlock
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 76cc547b-d095-4eb1-87b2-f1f320b666ad
+    m_ActionName: Player Ingame Actions/Block[/DualSenseGamepadHID/leftTrigger,/DualSenseGamepadHID/rightTrigger]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: Player Movement
+  m_DefaultActionMap: Player Ingame Actions
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!33 &6690541187038955909
