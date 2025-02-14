@@ -54,7 +54,7 @@ MonoBehaviour:
   movementSpeed: 5
   sprintMultiplier: 1.7
   gravityForce: 20
-  jumpForce: 8
+  jumpForce: 10
   maxJumps: 3
   dashForce: 20
   doubleTapThreshold: 0.25
@@ -66,8 +66,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   groundCheckDistance: 0.6
-  lightHitboxList: []
-  heavyHitboxList: []
+  lightHitboxList:
+  - colliderName: 
+    collider: []
+  heavyHitboxList:
+  - colliderName: 
+    collider: []
+  - colliderName: 
+    collider: []
   attackData: []
   cameraFollowWeight: 50
   cameraFollowRadius: 20

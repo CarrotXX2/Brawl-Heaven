@@ -16,6 +16,7 @@ public enum PlayerState
     InAir,
     Launched,
     LedgeGrabbing,
+    Attacking,
     Blocking,
 }
 
@@ -78,16 +79,16 @@ public class PlayerController : MonoBehaviour
          
          foreach (var pair in lightHitboxList)
          {
-             if (!lightHitboxes.ContainsKey(pair.colliderName))
+             if (!lightHitboxes.ContainsKey(pair.attackName))
              {
-                lightHitboxes[pair.colliderName] = pair.collider;
+                lightHitboxes[pair.attackName] = pair.collider;
              }
          }
          foreach (var pair in heavyHitboxList)
          {
-             if (!heavyHitboxes.ContainsKey(pair.colliderName))
+             if (!heavyHitboxes.ContainsKey(pair.attackName))
              {
-                 heavyHitboxes[pair.colliderName] = pair.collider;
+                 heavyHitboxes[pair.attackName] = pair.collider;
              }
          }
     }
@@ -189,6 +190,14 @@ public class PlayerController : MonoBehaviour
                     rb.velocity = new Vector3(rb.velocity.y, jumpForce); // Apply vertical jump force
                 }
                 break;
+            case PlayerState.InAir:
+                if (jumpsLeft > 0 && ctx.started)
+                {
+                    jumpsLeft--;
+            
+                    rb.velocity = new Vector3(rb.velocity.y, jumpForce); // Apply vertical jump force
+                }
+                break;
             case PlayerState.LedgeGrabbing:
                 break;
         }
@@ -198,7 +207,7 @@ public class PlayerController : MonoBehaviour
     private void Dash(float direction) // Dash Into the direction of the last double pressed direction
     {   
         Vector3 dashDirection = new Vector3(direction, 0, 0);
-        rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
+       // rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
     }
 
     private void LedgeGrab()
@@ -236,19 +245,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-    public void OnDamageTaken(float damage, float knockBack)
-    {
-        totalDamageTaken += damage;
-        
-        // KnockBack logic here
-    }
 
-    private void OnDeath()
-    {
-        stocks--;
-        
-        // play particle and death sound
-    }
     private void OnCollisionEnter(Collision collision) // Having both a ray and collision detection helps for easier walljump implementation with certain objects
     {
         if (collision.gameObject.transform.CompareTag("Wall Jump")) 
@@ -296,7 +293,7 @@ public class PlayerController : MonoBehaviour
         
         if (currentAttack != null)
         {
-            PerformAttack(currentAttack, colliders);
+            StartCoroutine(PerformAttack(currentAttack, colliders));
         }
         else
         {
@@ -321,7 +318,7 @@ public class PlayerController : MonoBehaviour
         
         if (currentAttack != null)
         {
-            PerformAttack(currentAttack, colliders);
+            StartCoroutine(PerformAttack(currentAttack, colliders));
         }
         else
         {
@@ -333,9 +330,37 @@ public class PlayerController : MonoBehaviour
     }
 
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
-    {
-        return null;
+    {   
+        currentState = PlayerState.Attacking;
+
+        yield return new WaitForSeconds(attackData.startupTime);
+
+        foreach (var collider in colliders)
+        {
+            collider.enabled = true;
+            DetectHits(collider, attackData);
+        }
+        
+        yield return new WaitForSeconds(attackData.activeTime);
+        
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            colliders[i].enabled = false;
+        }
     }
+    
+    private void DetectHits(Collider attackCollider, AttackData attackData)
+    {
+        // Check for overlaps with other colliders/players
+        Collider[] hitObjects = Physics.OverlapBox(attackCollider.bounds.center, attackCollider.bounds.extents, attackCollider.transform.rotation);
+
+        foreach (var hit in hitObjects)
+        {
+            PlayerController player = hit.transform.GetComponent<PlayerController>();
+            player.OnDamageTaken(attackData.damage, attackData.knockback);
+        }
+    }
+    
     private string GetAttackDirection(Vector2 inputDir)
     {
         if (inputDir.magnitude < deadZoneTreshold)
@@ -352,6 +377,23 @@ public class PlayerController : MonoBehaviour
             return inputDir.y > 0 ? "Up" : "Down";
         }
     }
+    
+    public void OnDamageTaken(float damage, float knockBack)
+    {
+        totalDamageTaken += damage;
+        print($"Took {damage} damage");
+        // KnockBack logic here
+    }
+
+    private void OnDeath()
+    {
+        stocks--;
+        if (stocks > 0)
+        {
+            // respawn
+        }
+        // play particle and death sound
+    }
 
     #endregion
     private void ChangeUI()
@@ -362,7 +404,7 @@ public class PlayerController : MonoBehaviour
     [Serializable]
     public struct HitBoxes 
     {
-        public string colliderName;         // Name of the hitbox
+        public string attackName;         // Name of the attack
         public Collider[] collider;   // The actual collider
     }
 }

@@ -10,6 +10,7 @@ public class AttackData : ScriptableObject
     public BoxCollider[] colliders;
     
     public float damage;
+    public float knockback;
     public float startupTime;
     public float activeTime;
     public float moveDuration;
