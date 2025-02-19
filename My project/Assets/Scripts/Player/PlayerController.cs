@@ -108,22 +108,14 @@ public class PlayerController : MonoBehaviour
              }
          }
     }
-
-    private void Start()
-    { 
-        // probably need to fully change camera behaviour but will do that at home
-       
-    }
-
+    
     private void Update() 
     {
         IsGrounded();
         LedgeGrab();
         Blocking();
     }
-
-
-
+    
     private void FixedUpdate()  // Use FixedUpdate for physics
     {
         Move();
@@ -146,11 +138,15 @@ public class PlayerController : MonoBehaviour
             default:
                 float speed = isSprinting ? movementSpeed * sprintMultiplier : movementSpeed;
                 rb.velocity = new Vector3(moveInput.x * speed, rb.velocity.y, 0);
-
+    
                 if (Mathf.Abs(moveInput.x) > deadZoneTreshold)
                 {
                     transform.rotation = Quaternion.LookRotation(new Vector3(moveInput.x, 0, 0));
                 }
+                
+                break;
+            case MovementState.LedgeGrabbing:
+                // Cant move/rotate while ledge grabbing
                 
                 break;
             
@@ -211,57 +207,47 @@ public class PlayerController : MonoBehaviour
        // rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
     }
 
-    private void LedgeGrab() // Hardcoded and still has issues/isn't finished yet, but low priority for now 
+    private void LedgeGrab()
     {
-        if (rb.velocity.y < 0 && movementState != MovementState.LedgeGrabbing)
-        {
-            Vector3 lineDownStartForward = (transform.position + Vector3.up * 1.2f) + transform.forward;
-            Vector3 lineDownEndForward = (transform.position + Vector3.down * 0.4f) + transform.forward;
-            
-            Vector3 lineDownStartBehind = (transform.position + Vector3.up * 1.2f) - transform.forward;
-            Vector3 lineDownEndBehind = (transform.position + Vector3.down * 0.4f) - transform.forward;
-            
-            RaycastHit downHitForward; 
-            RaycastHit downHitBehind; 
-            
-            Physics.Linecast(lineDownStartForward, lineDownEndForward, out downHitForward, groundLayer);
-            Physics.Linecast(lineDownStartBehind, lineDownEndBehind, out downHitBehind, groundLayer);
-            
-            Debug.DrawLine(lineDownStartForward, lineDownEndForward, Color.red, 2f);
-            Debug.DrawLine(lineDownStartBehind, lineDownEndBehind, Color.red, 2f);
-            if (downHitForward.collider != null || downHitBehind.collider != null)
-                
-            {
-                Vector3 lineForwardStart = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z); 
-                Vector3 lineForwardEnd = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z) + transform.forward; 
-                
-                Vector3 lineBehindStart = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z); 
-                Vector3 lineBehindEnd = new Vector3(transform.position.x, downHitForward.point.y, transform.position.z) - transform.forward; 
-                
-                RaycastHit forwardHit;
-                RaycastHit behindHit;
-                
-                Physics.Linecast(lineForwardStart, lineForwardEnd, out forwardHit, groundLayer);
-                Physics.Linecast(lineForwardStart, lineForwardEnd, out behindHit, groundLayer);
-                
-                Debug.DrawLine(lineForwardStart, lineForwardEnd, Color.green, 2f);
-                if (forwardHit.collider != null || behindHit.collider != null)
-                {
-                    rb.velocity = Vector3.zero;
-                    rb.isKinematic = true;
-                    
-                    movementState = MovementState.LedgeGrabbing;
-                    
-                    Vector3 hangPosition = new Vector3(forwardHit.point.x, downHitForward.point.y, forwardHit.point.z);
-                    Vector3 targetOffset = transform.forward * -0.1f + transform.up * -0.5f;
-                    
-                    hangPosition += targetOffset;
-                    transform.position = hangPosition;
-                }
-            }
+        if (rb.velocity.y >= 0 || movementState == MovementState.LedgeGrabbing) return; 
+
+        Vector3[] directions = { transform.forward, -transform.forward }; // Check front & back
+
+        foreach (var direction in directions)
+        {   
+            TryLedgeGrab(direction);
         }
     }
 
+    private void TryLedgeGrab(Vector3 direction)
+    {
+        Vector3 lineDownStart = transform.position + Vector3.up * 1.2f + direction;
+        Vector3 lineDownEnd = transform.position + Vector3.down * 0.4f + direction;
+    
+        Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
+
+        if (!Physics.Linecast(lineDownStart, lineDownEnd, out RaycastHit downHit, groundLayer))
+            return;
+
+        Vector3 lineForwardStart = new Vector3(transform.position.x, downHit.point.y, transform.position.z);
+        Vector3 lineForwardEnd = lineForwardStart + direction;
+    
+        Debug.DrawLine(lineForwardStart, lineForwardEnd, Color.green, 2f);
+
+        if (!Physics.Linecast(lineForwardStart, lineForwardEnd, out RaycastHit forwardHit, groundLayer))
+            return;
+
+        rb.velocity = Vector3.zero;
+        rb.isKinematic = true;
+    
+        movementState = MovementState.LedgeGrabbing;
+    
+        Vector3 hangPosition = new Vector3(forwardHit.point.x, downHit.point.y, forwardHit.point.z);
+        Vector3 targetOffset = -direction * 0.1f + Vector3.up * -0.5f;
+    
+        transform.position = hangPosition + targetOffset;
+    }
+    
     private void OnCollisionEnter(Collision collision) // Having both a ray and collision detection helps for easier walljump implementation with certain objects
     {
         if (collision.gameObject.transform.CompareTag("Wall Jump")) 
@@ -278,7 +264,7 @@ public class PlayerController : MonoBehaviour
         {
             movementState = MovementState.Grounded;
         }
-        else //if (currentState == PlayerState.LedgeGrabbing)
+        else if (movementState != MovementState.LedgeGrabbing)
         {
             movementState = MovementState.InAir;
         }
@@ -399,35 +385,37 @@ public class PlayerController : MonoBehaviour
 
     public void OnBlock(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed) // When button is fully pressed
+        if (ctx.started) // When button is pressed
         {
             Debug.Log("Blocking started");
             combatState = CombatState.Blocking;
-        
-            if (coroutineRunning)
-            {
-                StopCoroutine(RechargeBlock());
-                coroutineRunning = false;
-            }
         }
 
-        if (ctx.canceled) // When button is released
+        if (ctx.canceled)
         {
-            Debug.Log("Blocking ended, starting recharge");
-            StartCoroutine(RechargeBlock());
+            Debug.Log("Blocking stopped");
             combatState = CombatState.Neutral;
         }
     }
     
     private void Blocking()
     {
-        if (combatState != CombatState.Blocking) return;
-        
-        currentBlockingTime -= Time.deltaTime;
-        currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0, totalBlockingTime);
+        if (combatState != CombatState.Blocking)
+        {
+            if (currentBlockingTime < totalBlockingTime) // Recharge block
+            {
+                currentBlockingTime = Mathf.MoveTowards(currentBlockingTime, totalBlockingTime, Time.deltaTime * blockRechargeTime);
+                currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0 , totalBlockingTime);
+            }
+        }
+        else // If blocking is true
+        {
+            currentBlockingTime -= Time.deltaTime;
+            currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0, totalBlockingTime);
+        }
     }
 
-    private IEnumerator RechargeBlock()
+   /* private IEnumerator RechargeBlock()
     {
         coroutineRunning = true;
 
@@ -440,7 +428,7 @@ public class PlayerController : MonoBehaviour
         
         coroutineRunning = false;
     }
-    
+    */
     public void OnHit(float damage, float knockBack)
     {
         switch (combatState)
