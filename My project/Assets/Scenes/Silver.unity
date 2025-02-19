@@ -719,6 +719,21 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2866124987636552041, guid: 6309e8e91d92ee642ad1f959b1abc3e1,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1591.0614
+      objectReference: {fileID: 0}
+    - target: {fileID: 2866124987636552041, guid: 6309e8e91d92ee642ad1f959b1abc3e1,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1591.0614
+      objectReference: {fileID: 0}
+    - target: {fileID: 2866124987636552041, guid: 6309e8e91d92ee642ad1f959b1abc3e1,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1591.0614
+      objectReference: {fileID: 0}
+    - target: {fileID: 2866124987636552041, guid: 6309e8e91d92ee642ad1f959b1abc3e1,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -32694,7 +32709,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2006260182
 Transform:
   m_ObjectHideFlags: 0
@@ -33207,6 +33222,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!4 &543450653011068432
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148804197546}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &644231122193978423
 RectTransform:
   m_ObjectHideFlags: 0
@@ -33270,6 +33300,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8266034579023729503}
   m_CullTransparentMesh: 1
+--- !u!1 &919132148804197546
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 543450653011068432}
+  m_Layer: 0
+  m_Name: Stage 4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &1107286996010812678
 RectTransform:
   m_ObjectHideFlags: 0
@@ -35983,6 +36029,7 @@ SceneRoots:
   - {fileID: 1753623248}
   - {fileID: 114292338}
   - {fileID: 2006260182}
+  - {fileID: 543450653011068432}
   - {fileID: 2086098659}
   - {fileID: 149556534}
   - {fileID: 791504344}
