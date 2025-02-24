@@ -40,11 +40,11 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Glitter_Offset: 0.57
-    - _Noise_Scale: 12.4
-    - _Noise_Speed: 0.0005
+    - _Glitter_Offset: 0.54
+    - _Noise_Scale: 7.7
+    - _Noise_Speed: 0.00035
     - _QueueControl: 0
     m_Colors:
-    - _Glitter_Color: {r: 4.393522, g: 4.882789, b: 2.5104907, a: 0}
+    - _Glitter_Color: {r: 2.53087, g: 2.7181542, b: 4.882789, a: 0}
     - _Glitter_Color2: {r: 0, g: 0.19272764, b: 2.986222, a: 0}
   m_BuildTextureStacks: []
