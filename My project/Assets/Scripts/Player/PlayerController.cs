@@ -2,19 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Cinemachine;
-using Unity.VisualScripting;
-using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
+using Debug = UnityEngine.Debug;
 
 
 public enum MovementState
 {
     Grounded,
     InAir,
+    Dashing,
     Launched,
     LedgeGrabbing,
     
@@ -25,7 +22,7 @@ public enum CombatState
     Neutral,
     Attacking,
     Blocking,
-    Hit,
+    HitStun,
 }
 
 public class PlayerController : MonoBehaviour
@@ -45,12 +42,16 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float gravityForce;
     
+    
     [SerializeField] private float jumpForce; // Jump strength
     [SerializeField] private int maxJumps;
     private int jumpsLeft; // Amount of jumps left
-    
+
+    [Header("Dash Stats")]
     [SerializeField] private float dashForce; // Dash Strength
 
+    [SerializeField] private float dashTime;
+    
     [Header("Sprint logic")] 
     [SerializeField] private float doubleTapThreshold; // Time window you have for multi tapping and to start sprinting
     [SerializeField] private float deadZoneTreshold; // The value that moveInput needs to be to count as a movement input
@@ -62,7 +63,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer; //is the layer called ground
     [SerializeField] private float groundCheckDistance;
     
-    [Header("Attack Logic")]
+    [Header("Launch Logic")]
+    [SerializeField] private int weight; // Weight determines the players knockback, heavier weight less knockback
+
+    [Header("Attack Logic")] 
+    [SerializeField] private LayerMask player;
+    
     [SerializeField] private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); // List of hitboxes for light attack
     [SerializeField] private List<HitBoxes> heavyHitboxList = new List<HitBoxes>(); // List of hitboxes for heavy attakcs
     
@@ -76,8 +82,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float currentBlockingTime;
     [SerializeField] private float blockRechargeTime;
     [SerializeField] private float shieldReductionFactor; // Factor used for calculating the time that needs to be reduced when hit by an attack
-
-    private bool coroutineRunning = false;
+    
     [Header("Camera Control")]
     [SerializeField] private float cameraFollowWeight;
     [SerializeField] private float cameraFollowRadius;
@@ -126,11 +131,22 @@ public class PlayerController : MonoBehaviour
     
     private void ApplyGravity()
     {
-        if (movementState != MovementState.Grounded && movementState != MovementState.LedgeGrabbing) // Apply gravity only if not grounded
+        if (movementState == MovementState.InAir || movementState == MovementState.Launched) // Apply gravity only if In air or launched
         {
             rb.AddForce(Vector3.down * gravityForce, ForceMode.Acceleration);
         }
     }
+    
+    /*
+    private bool ShouldApplyGravity()
+    {
+        if (movementState == MovementState.InAir && movementState == MovementState.Launched) // Apply gravity only if In air or launched
+        {
+           return true;
+        }
+        return false;
+    }*/
+    
     private void Move()
     {
         switch (movementState)
@@ -154,8 +170,11 @@ public class PlayerController : MonoBehaviour
                 // movement logic when launched 
                 
                 break;
+            case MovementState.Dashing:
+                break;
         }
     }
+    
     public void OnMove(InputAction.CallbackContext ctx)
     {
         moveInput = ctx.ReadValue<Vector2>();  // Get X-axis input
@@ -194,18 +213,48 @@ public class PlayerController : MonoBehaviour
             
                     rb.velocity = new Vector3(rb.velocity.y, jumpForce); // Apply vertical jump force
                 }
+                
                 break;
             case MovementState.LedgeGrabbing:
-                // LedgeGrab logic
+                
+                rb.isKinematic = false;
+                movementState = MovementState.InAir;
+                rb.velocity = new Vector3(rb.velocity.y, jumpForce);
+                
                 break;
         }
     }
-
-    private void Dash(float direction) // Dash Into the direction of the last double pressed direction
-    {   
-        Vector3 dashDirection = new Vector3(direction, 0, 0);
-       // rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
+    
+    private void Dash(float direction) 
+    {
+        print("Dashing");
+        direction = Mathf.Sign(direction);
+        movementState = MovementState.Dashing;
+            
+        rb.velocity = new Vector3(direction * dashForce, rb.velocity.y, 0);
+        
+        StartCoroutine(EndDash());
     }
+    
+    private IEnumerator EndDash()
+    {
+        yield return new WaitForSeconds(dashTime); // Wait for dash duration
+
+        if (IsGrounded()) 
+        {
+            movementState = MovementState.Grounded;
+        }
+        else 
+        {
+            movementState = MovementState.InAir;
+        }
+    }
+    /* private void Dash(float direction) // Dash Into the direction of the last double pressed direction
+    {   
+        //Vector3 dashDirection = new Vector3(direction, 0, 0);
+       // rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
+       rb.velocity = new Vector3(direction * dashForce, rb.velocity.y ,rb.velocity.z);
+    }*/
 
     private void LedgeGrab()
     {
@@ -260,16 +309,19 @@ public class PlayerController : MonoBehaviour
     {
         bool grounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
         
-        if (grounded)
+        if (movementState != MovementState.Dashing)
         {
-            movementState = MovementState.Grounded;
+            if (grounded)
+            {
+                movementState = MovementState.Grounded;
+            }
+            else if (movementState != MovementState.LedgeGrabbing)
+            {
+                movementState = MovementState.InAir;
+            }
         }
-        else if (movementState != MovementState.LedgeGrabbing)
-        {
-            movementState = MovementState.InAir;
-        }
-      
-        return grounded;
+
+        return true;
     }
     
     private void ResetJumps()
@@ -280,9 +332,12 @@ public class PlayerController : MonoBehaviour
 
     #region Combat Logic
 
+    #region  Attacking And Hit logic
+
     public void OnLightAttack(InputAction.CallbackContext ctx)
     {
-        if (!ctx.started) return;
+     
+        if (!ctx.started || !CanAttack()) return;
         
         string direction = GetAttackDirection(moveInput);
         string moveName = $"{movementState.ToString()} {direction}";
@@ -305,11 +360,12 @@ public class PlayerController : MonoBehaviour
         }
         
         print(moveName);
+        
     }
     
     public void OnHeavytAttack(InputAction.CallbackContext ctx)
     {
-        if (!ctx.started) return;
+        if (!ctx.started || !CanAttack()) return;
         
         string direction = GetAttackDirection(moveInput);
         string moveName = $"{movementState.ToString()} {direction}";
@@ -332,8 +388,36 @@ public class PlayerController : MonoBehaviour
         }
         
         print(moveName);
+     
     }
 
+    private bool CanAttack()
+    {
+        if (movementState == MovementState.Grounded && combatState == CombatState.Neutral|| movementState == MovementState.InAir && combatState == CombatState.Neutral )
+        {
+            return true;
+        }
+        
+        return false;
+    }
+
+    private string GetAttackDirection(Vector2 inputDir)
+    {
+        if (inputDir.magnitude < deadZoneTreshold)
+        {
+             return "Neutral"; // No direction pressed
+        }
+
+        if (Mathf.Abs(inputDir.x) > Mathf.Abs(inputDir.y)) 
+        {
+            return inputDir.x > 0 ? "Right" : "Left";
+        }
+        else 
+        {
+            return inputDir.y > 0 ? "Up" : "Down";
+        }
+    }
+    
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
     {   
         combatState = CombatState.Attacking;
@@ -352,40 +436,76 @@ public class PlayerController : MonoBehaviour
         {
             colliders[i].enabled = false;
         }
+        yield return new WaitForSeconds(attackData.moveDuration);
+        combatState = CombatState.Neutral;
     }
     
     private void DetectHits(Collider attackCollider, AttackData attackData)
     {
         // Check for overlaps with other colliders/players
-        Collider[] hitObjects = Physics.OverlapBox(attackCollider.bounds.center, attackCollider.bounds.extents, attackCollider.transform.rotation);
+        Collider[] hitObjects = Physics.OverlapBox(attackCollider.bounds.center, attackCollider.bounds.extents, attackCollider.transform.rotation, player);
 
         foreach (var hit in hitObjects)
         {
             PlayerController player = hit.transform.GetComponent<PlayerController>();
-            player.OnHit(attackData.damage, attackData.knockback);
+            if (player)
+            {
+                player.OnHit(attackData, transform);
+            }
         }
     }
-    
-    private string GetAttackDirection(Vector2 inputDir)
+    public void OnHit(AttackData attackData, Transform enemyTransform)
     {
-        if (inputDir.magnitude < deadZoneTreshold)
+        switch (combatState)
         {
-             return "Neutral"; // No direction pressed
-        }
-
-        if (Mathf.Abs(inputDir.x) > Mathf.Abs(inputDir.y)) 
-        {
-            return inputDir.x > 0 ? "Right" : "Left";
-        }
-        else 
-        {
-            return inputDir.y > 0 ? "Up" : "Down";
+            default:
+                totalDamageTaken += attackData.damage;
+                print($"Took {attackData.damage} damage");
+                    ApplyKnockback(attackData, enemyTransform);
+                
+                break;
+            case CombatState.Blocking:
+                currentBlockingTime -= attackData.damage * shieldReductionFactor;
+                
+                break;
         }
     }
+    /*
+    IEnumerator LaunchPlayer(Vector3 direction, float force, float duration)
+    {
+        float timer = 0f;
+        while (timer < duration)
+        {
+            rb.AddForce(direction * (force * Time.fixedDeltaTime), ForceMode.Acceleration);
+            timer += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+    }*/
+    private void ApplyKnockback(AttackData attackData, Transform enemyTransform)//Vector2 hitDirection, float damage, float baseKnockback, float staleMultiplier = 1.0f, float angleMultiplier = 1.0f)
+    {
+        if (attackData.knockback == 0) return;
+        
+        float knockback = ((attackData.damage * (attackData.knockback / 10) * (200 / (weight + 100))) + 18);
+        
+        // Get knockback direction (from attacker to target)
+        Vector3 hitDirection = (transform.position - enemyTransform.position).normalized;
+        
+        Vector2 launchForce = attackData.hitDirection.normalized * knockback;
+        rb.AddForce(launchForce, ForceMode.VelocityChange);
+    }
+
+    private void ApplyHitStun()
+    {
+        
+    }
+
+    #endregion
+
+    #region Blocking Logic
 
     public void OnBlock(InputAction.CallbackContext ctx)
     {
-        if (ctx.started) // When button is pressed
+        if (ctx.started || CanBlock()) // When button is pressed
         {
             Debug.Log("Blocking started");
             combatState = CombatState.Blocking;
@@ -397,7 +517,16 @@ public class PlayerController : MonoBehaviour
             combatState = CombatState.Neutral;
         }
     }
-    
+
+    private bool CanBlock()
+    {
+        if (movementState == MovementState.Grounded && combatState == CombatState.Neutral|| movementState == MovementState.InAir && combatState == CombatState.Neutral )
+        {
+            return true;
+        }
+        
+        return false;
+    }
     private void Blocking()
     {
         if (combatState != CombatState.Blocking)
@@ -415,37 +544,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-   /* private IEnumerator RechargeBlock()
-    {
-        coroutineRunning = true;
+    #endregion
 
-        while (currentBlockingTime < totalBlockingTime)
-        {
-            currentBlockingTime = Mathf.MoveTowards(currentBlockingTime, totalBlockingTime, Time.deltaTime * blockRechargeTime);
-            currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0 , totalBlockingTime);
-            yield return null;
-        }
-        
-        coroutineRunning = false;
-    }
-    */
-    public void OnHit(float damage, float knockBack)
-    {
-        switch (combatState)
-        {
-            default:
-                totalDamageTaken += damage;
-                print($"Took {damage} damage");
-                    
-                // KnockBack logic here
-                
-                break;
-            case CombatState.Blocking:
-                currentBlockingTime -= damage * shieldReductionFactor;
-                
-                break;
-        }
-    }
+    #region Death
 
     private void OnDeath()
     {
@@ -459,6 +560,9 @@ public class PlayerController : MonoBehaviour
     }
 
     #endregion
+    
+
+    #endregion
     private void ChangeUI()
     {
         
@@ -467,8 +571,8 @@ public class PlayerController : MonoBehaviour
     [Serializable]
     public struct HitBoxes 
     {
-        public string attackName;         // Name of the attack
-        public Collider[] collider;   // The actual collider
+        public string attackName; // Name of the attack
+        public Collider[] collider; // The actual collider
     }
 }
 

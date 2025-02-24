@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd707e9130b5c1446a46a3040c9b10fe, type: 3}
   m_Name: Attack Test
   m_EditorClassIdentifier: 
-  attackName: 
+  attackName: Grounded Neutral
   animation: {fileID: 0}
-  colliders: []
-  damage: 0
-  startupTime: 0
-  activeTime: 0
-  moveDuration: 0
+  damage: 10
+  knockback: 59.22
+  knockUp: 0
+  hitStun: 0
+  hitDirection: {x: 0.75, y: 0.09}
+  startupTime: 0.2
+  activeTime: 0.5
+  moveDuration: 1
