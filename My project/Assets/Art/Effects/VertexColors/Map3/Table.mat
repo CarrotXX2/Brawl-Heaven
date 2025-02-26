@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-6845203221438547867
+--- !u!114 &-1610253276302386397
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,12 +20,11 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: GlassboxMusicBox Variant
-  m_Shader: {fileID: -6465566751694194690, guid: f448a1ed47b1bd542843eebeeb8786ec,
+  m_Name: Table
+  m_Shader: {fileID: -6465566751694194690, guid: 061147ee1fddf024b92b59f8db33f637,
     type: 3}
-  m_Parent: {fileID: -876546973899608171, guid: f448a1ed47b1bd542843eebeeb8786ec,
-    type: 3}
-  m_ModifiedSerializedProperties: 0
+  m_Parent: {fileID: 2100000, guid: 1f8692e9cf3c64440aadb3207d11528b, type: 2}
+  m_ModifiedSerializedProperties: 2
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 2
@@ -40,7 +39,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Doorzichtigheid: 0.41
     - _QueueControl: 0
-    m_Colors: []
+    m_Colors:
+    - _Color: {r: 1, g: 0.7237781, b: 0.6839622, a: 0}
   m_BuildTextureStacks: []
