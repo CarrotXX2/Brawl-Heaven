@@ -17,8 +17,9 @@ MonoBehaviour:
   damage: 10
   knockback: 59.22
   knockUp: 0
-  hitStun: 0
-  hitDirection: {x: 0.75, y: 0.09}
+  hitDirection: {x: 0.75, y: 0.75}
+  unstoppable: 1
+  hitStun: 0.2
   startupTime: 0.2
   activeTime: 0.5
   moveDuration: 1
