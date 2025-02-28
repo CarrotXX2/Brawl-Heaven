@@ -23,7 +23,7 @@ Material:
   m_Name: Table
   m_Shader: {fileID: -6465566751694194690, guid: 061147ee1fddf024b92b59f8db33f637,
     type: 3}
-  m_Parent: {fileID: 2100000, guid: 1f8692e9cf3c64440aadb3207d11528b, type: 2}
+  m_Parent: {fileID: 2100000, guid: 123fff3ce2c0ac14384f5ac3f1de34c9, type: 2}
   m_ModifiedSerializedProperties: 2
   m_ValidKeywords: []
   m_InvalidKeywords: []

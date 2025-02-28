@@ -807,7 +807,7 @@
     "m_CustomColors": {
         "m_SerializableColors": []
     },
-    "m_Unit": 0
+    "m_Unit": 1
 }
 
 {
@@ -850,7 +850,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Rotation",
     "m_StageCapability": 3,
-    "m_Value": 2.4000000953674318,
+    "m_Value": 45.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
