@@ -61,7 +61,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       propertyPath: m_Name
-      value: CharacterModel
+      value: Painter
       objectReference: {fileID: 0}
     - target: {fileID: 1630794972795428178, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
@@ -73,6 +73,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[1]
       value: 
       objectReference: {fileID: 2100000, guid: f39958fdcc57782479bc312e25a5602a, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 8b825605a771d894c9b7ab866fdccc42,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: df3de2687d19bcb468fcae443511dedb, type: 2}
     - target: {fileID: 7405634472509215169, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
