@@ -124,6 +124,52 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &888164099 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3057215183209641584, guid: 1a305f95246fdc545974793a78cfac97,
+    type: 3}
+  m_PrefabInstance: {fileID: 4502577163998863155}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &888164101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888164099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d2d8611fbae8f74cb21bee5d9c404ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startRotation: {x: -55, y: 0, z: 0}
+  targetRotation: {x: 0, y: 0, z: 0}
+  rotationDuration: 2
+  rotationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  startRotationBool: 0
 --- !u!1 &1551661393
 GameObject:
   m_ObjectHideFlags: 0
@@ -318,10 +364,90 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 195856337421973282, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 19.401
+      objectReference: {fileID: 0}
+    - target: {fileID: 1102628273297522761, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1102628273297522761, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: InitialModule.startLifetime.minMaxState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1102628273297522761, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: InitialModule.startLifetime.maxCurve.m_Curve.Array.data[0].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1496054926586282010, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.9329998
+      objectReference: {fileID: 0}
+    - target: {fileID: 1674622206502301386, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_Name
+      value: Music box
+      objectReference: {fileID: 0}
+    - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.8870109
+      objectReference: {fileID: 0}
+    - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.46174863
+      objectReference: {fileID: 0}
+    - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -55
+      objectReference: {fileID: 0}
     - target: {fileID: 4009585899973646626, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_Name
       value: Stage3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4875953802414647468, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.759
+      objectReference: {fileID: 0}
+    - target: {fileID: 5052916095903244270, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5052916095903244270, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: InitialModule.startLifetime.minMaxState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5052916095903244270, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: InitialModule.startLifetime.maxCurve.m_Curve.Array.data[0].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157083900091641960, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 19.401
       objectReference: {fileID: 0}
     - target: {fileID: 8005457163109562430, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
@@ -373,10 +499,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9119707385983244236, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_Name
+      value: Background
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1117040132569264015, guid: 1a305f95246fdc545974793a78cfac97, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3057215183209641584, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 888164101}
   m_SourcePrefab: {fileID: 100100000, guid: 1a305f95246fdc545974793a78cfac97, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
