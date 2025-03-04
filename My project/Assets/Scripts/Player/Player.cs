@@ -33,6 +33,8 @@ public class Player : MonoBehaviour
     {
         PlayerManager.Instance.AddPlayer(gameObject);
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
@@ -82,7 +84,6 @@ public class Player : MonoBehaviour
 
     public void OnGameStart()
     {
-        RemoveVirtualMouseForGamepad(); // Remove cursor on game start
         GameObject playerCharacter = Instantiate(characterPrefab, transform);
         playerController = playerCharacter.GetComponent<PlayerController>();
     }

@@ -2382,6 +2382,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterPrefab: {fileID: 1962034553825896291, guid: 76e2aecc65508ca43acb7384b332289b,
     type: 3}
+  onButtonPressed:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
