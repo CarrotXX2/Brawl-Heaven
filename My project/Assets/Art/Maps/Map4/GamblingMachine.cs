@@ -4,25 +4,26 @@ using UnityEngine;
 public class GamblingMachine : MonoBehaviour
 {
     [Header("Wheels Config")]
-    public Transform[] wheels; // Sleep hier de 4 wielen in
+    public Transform[] wheels;
+    public ParticleSystem wheelParticle; // Sleep hier de particle systems in
 
     [Header("Spin Settings")]
-    public float minSpinDuration = 1.5f; // Minimale spin duur
-    public float maxSpinDuration = 3f; // Maximale spin duur
-    public float maxSpinSpeed = 500f; // Maximale snelheid
-    public float deceleration = 250f; // Hoe snel hij afremt
-    public float snapSpeed = 2f; // Snelheid van de smooth stop
+    public float minSpinDuration = 1.5f;
+    public float maxSpinDuration = 3f;
+    public float maxSpinSpeed = 500f;
+    public float deceleration = 250f;
+    public float snapSpeed = 2f;
 
     [Header("Lever Settings")]
-    public Transform lever; // De hendel Transform
-    public float leverUpAngle = 0f; // Hoek wanneer de hendel omhoog staat
-    public float leverDownAngle = -45f; // Hoek wanneer de hendel omlaag is getrokken
-    public float leverOvershootAngle = -50f; // Kleine overshoot voor animatie
-    public float leverMoveTime = 0.2f; // Tijd voor de hendelbeweging omlaag
-    public float leverReturnTime = 0.3f; // Tijd voor de hendelbeweging omhoog
+    public Transform lever;
+    public float leverUpAngle = 0f;
+    public float leverDownAngle = -45f;
+    public float leverOvershootAngle = -50f;
+    public float leverMoveTime = 0.2f;
+    public float leverReturnTime = 0.3f;
 
     [Header("Control")]
-    public bool startSpin = false; // Zet deze op true om te starten
+    public bool startSpin = false;
 
     private bool isSpinning = false;
 
@@ -30,7 +31,7 @@ public class GamblingMachine : MonoBehaviour
     {
         if (startSpin && !isSpinning)
         {
-            startSpin = false; // Reset bool in de Inspector
+            startSpin = false;
             StartCoroutine(HandleLeverAndSpin());
         }
     }
@@ -38,22 +39,12 @@ public class GamblingMachine : MonoBehaviour
     IEnumerator HandleLeverAndSpin()
     {
         isSpinning = true;
-
-        // Beweeg hendel omlaag met animatie effect
-        yield return LeverAnimation(leverUpAngle, leverOvershootAngle, leverMoveTime * 0.5f); // Snelle overshoot
-        yield return LeverAnimation(leverOvershootAngle, leverDownAngle, leverMoveTime * 0.5f); // Terug naar eindpositie
-
-        // Direct starten met spinnen na hendelbeweging
+        yield return LeverAnimation(leverUpAngle, leverOvershootAngle, leverMoveTime * 0.5f);
+        yield return LeverAnimation(leverOvershootAngle, leverDownAngle, leverMoveTime * 0.5f);
         StartCoroutine(SpinWheels());
-
-        // Wacht een kleine tijd voordat de hendel teruggaat
         yield return new WaitForSeconds(0.5f);
-
-        // Beweeg hendel omhoog met lichte schokkerige animatie
-        yield return LeverAnimation(leverDownAngle, leverUpAngle + 5f, leverReturnTime * 0.6f); // Snelle terugkeer
-        yield return LeverAnimation(leverUpAngle + 5f, leverUpAngle, leverReturnTime * 0.4f); // Kleine bounce
-
-        // Reset zodat de hendel opnieuw gebruikt kan worden
+        yield return LeverAnimation(leverDownAngle, leverUpAngle + 5f, leverReturnTime * 0.6f);
+        yield return LeverAnimation(leverUpAngle + 5f, leverUpAngle, leverReturnTime * 0.4f);
         isSpinning = false;
     }
 
@@ -74,18 +65,16 @@ public class GamblingMachine : MonoBehaviour
     {
         isSpinning = true;
         float randomSpinDuration = Random.Range(minSpinDuration, maxSpinDuration);
-
         for (int i = 0; i < wheels.Length; i++)
         {
-            StartCoroutine(SpinWheel(wheels[i], randomSpinDuration));
+            StartCoroutine(SpinWheel(wheels[i], wheelParticle, randomSpinDuration));
             yield return new WaitForSeconds(0.5f);
         }
-
         yield return new WaitForSeconds(randomSpinDuration + 1f);
         isSpinning = false;
     }
 
-    IEnumerator SpinWheel(Transform wheel, float duration)
+    IEnumerator SpinWheel(Transform wheel, ParticleSystem particle, float duration)
     {
         float currentRotation = NormalizeAngle(wheel.eulerAngles.x);
         float startRotation = Mathf.Round(currentRotation / 25) * 25;
@@ -102,7 +91,6 @@ public class GamblingMachine : MonoBehaviour
             yield return null;
         }
 
-        // Stoppen op de juiste positie (smooth animatie)
         float targetRotation = Mathf.Round(NormalizeAngle(wheel.eulerAngles.x) / 25) * 25;
         float elapsedTime = 0f;
         Vector3 initialRotation = wheel.eulerAngles;
@@ -116,6 +104,7 @@ public class GamblingMachine : MonoBehaviour
         }
 
         wheel.eulerAngles = finalRotation;
+        particle.Play(); // Speel de particle effect af
     }
 
     float NormalizeAngle(float angle)
