@@ -40,7 +40,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Doorzichtigheid: 0.41
+    - _Doorzichtigheid: 0.21
     - _QueueControl: 0
     m_Colors: []
   m_BuildTextureStacks: []

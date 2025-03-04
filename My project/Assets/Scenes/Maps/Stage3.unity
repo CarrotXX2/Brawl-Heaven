@@ -23,10 +23,10 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 1
+  m_AmbientIntensity: 0.67
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 123caa41e84e041d0bd65bb3ae888dd1, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: e1ec0e2320d2d4fb9a393769378ce0a1, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -394,6 +394,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Music box
       objectReference: {fileID: 0}
+    - target: {fileID: 2244225396520217600, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2271dbf4c880d404d9f958990be70ab5, type: 2}
     - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_LocalRotation.w
@@ -449,6 +454,16 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 19.401
       objectReference: {fileID: 0}
+    - target: {fileID: 7318149269060728345, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7318149269060728345, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2271dbf4c880d404d9f958990be70ab5, type: 2}
     - target: {fileID: 8005457163109562430, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_LocalPosition.x
