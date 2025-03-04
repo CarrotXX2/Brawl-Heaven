@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [Header("Player in game Stats")] 
     [SerializeField] private float totalDamageTaken;
+
     [SerializeField] private int stocks;
 
     [Header("Movement Stats")]
@@ -42,42 +43,52 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float sprintMultiplier; // Multiplies the base movementspeed for a sprint speed
 
     [SerializeField] private float gravityForce; // Gravity strength
-    
+
     [SerializeField] private float jumpForce; // Jump strength
     [SerializeField] private int maxJumps; // Total jumps player can have in total
     [SerializeField] private int jumpsLeft; // Amount of jumps left
 
-    [Header("Dash Stats")] 
-    [SerializeField] private float dashForce; // Dash Strength
+    [Header("Dash Stats")] [SerializeField]
+    private float dashForce; // Dash Strength
 
     [SerializeField]
     private float dashTime; // Duration of the dash PLayer doesnt have control of the character for this amount
 
-    [Header("Sprint logic")] 
-    [SerializeField] private float doubleTapThreshold; // Time window you have for multi tapping and to start sprinting
+    [Header("Sprint logic")] [SerializeField]
+    private float doubleTapThreshold; // Time window you have for multi tapping and to start sprinting
 
-    [SerializeField] private float deadZoneTreshold; // The value that moveInput needs to be to count as a movement input
+    [SerializeField]
+    private float deadZoneTreshold; // The value that moveInput needs to be to count as a movement input
 
     [SerializeField] private float lastTapTime; // Stores the time of the last movement input to detect double taps
     private bool isSprinting;
     private bool wasMovingLastFrame; // Flag to check if you moved last frame
 
-    [Header("Ground Check")] 
-    [SerializeField] private LayerMask groundLayer; // The ground layer, used for checking if the player is grounded 
-    [SerializeField] private float groundCheckDistance; // Half of the characters height + a little bit for ground check raycast
+    [Header("Ground Check")] [SerializeField]
+    private LayerMask groundLayer; // The ground layer, used for checking if the player is grounded 
 
-    [Header("Launch Logic")] 
-    [SerializeField] private int weight; // Weight determines the players knockback, heavier weight less knockback
+    [SerializeField]
+    private float groundCheckDistance; // Half of the characters height + a little bit for ground check raycast
+
+    [Header("Launch Logic")] [SerializeField]
+    private int weight; // Weight determines the players knockback, heavier weight less knockback
+
     [SerializeField] private float minLaunchForce;
-    
-    [Header("Attack Logic")] 
-    [SerializeField] private LayerMask player;
 
-    [SerializeField] private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); // List of hitboxes for light attacks
-    [SerializeField] private List<HitBoxes> heavyHitboxList = new List<HitBoxes>(); // List of hitboxes for heavy attakcs
+    [Header("Attack Logic")] [SerializeField]
+    private LayerMask player;
 
-    private Dictionary<string, Collider[]> lightHitboxes = new Dictionary<string, Collider[]>(); // Dictionary to easily call the light hitboxes
-    private Dictionary<string, Collider[]> heavyHitboxes = new Dictionary<string, Collider[]>(); // Dictionary to easily call the heavy hitboxes
+    [SerializeField]
+    private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); // List of hitboxes for light attacks
+
+    [SerializeField]
+    private List<HitBoxes> heavyHitboxList = new List<HitBoxes>(); // List of hitboxes for heavy attakcs
+
+    private Dictionary<string, Collider[]>
+        lightHitboxes = new Dictionary<string, Collider[]>(); // Dictionary to easily call the light hitboxes
+
+    private Dictionary<string, Collider[]>
+        heavyHitboxes = new Dictionary<string, Collider[]>(); // Dictionary to easily call the heavy hitboxes
 
     [SerializeField] private List<AttackData> attackData = new List<AttackData>();
 
@@ -89,29 +100,34 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float currentBlockingTime;
     [SerializeField] private float blockRechargeTime;
 
-    [SerializeField] private float shieldReductionFactor; // Factor used for calculating the time that needs to be reduced when hit by an attack
+    [SerializeField]
+    private float
+        shieldReductionFactor; // Factor used for calculating the time that needs to be reduced when hit by an attack
 
     [Header("Respawn Logic")]
-    private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
+    private bool
+        invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
     // ^^ implement this
-    
+
     [SerializeField] private float respawnTime;
     public bool touchedDeathZone;
-    
+
     [Header("Camera Control")] // Need to change camera logic 
-    [SerializeField] private float cameraFollowWeight;
+    [SerializeField]
+    private float cameraFollowWeight;
 
     [SerializeField] private float cameraFollowRadius;
 
-    [Header("Component references")] private Rigidbody rb;
+    [Header("Component references")] [SerializeField]
+    private Rigidbody rb;
+    
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        
         combatState = CombatState.Neutral; 
         
-       // LocalMultiplayerManager.Instance.AddPlayer(gameObject);
-
         foreach (var pair in lightHitboxList) // Setting up the light attack dictionary
         {
             if (!lightHitboxes.ContainsKey(pair.attackName))

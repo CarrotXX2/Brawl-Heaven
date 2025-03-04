@@ -5,10 +5,13 @@ using UnityEngine;
 public class GameplayManager : MonoBehaviour
 {
     public static GameplayManager Instance;
+
+    [Header("Gameplay")] 
+    public bool gameStarted = true;
+    public bool gamePaused;
     
     [Header("Players")]
     public List<GameObject> players = new List<GameObject>();
-
     public List<GameObject> playersAlive = new List<GameObject>();
         
     [Header("Spawn logic")]    

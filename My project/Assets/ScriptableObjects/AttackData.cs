@@ -7,10 +7,11 @@ public class AttackData : ScriptableObject
     public string attackName;
     public AnimationClip animation;
     
+    [Header("Move Properties")]
     public float damage; 
     public float knockback;
     public float knockUp;
-    public Vector2 hitDirection; // Direction of the knockback,value should be between 0 and 1
+    public Vector2 hitDirection; // Direction of the knockback, value should be between 0 and 1
 
     public bool unstoppable = false; // If true, move can't be cancelled when hit
     public float hitStun; // Recovery time needed after being hit

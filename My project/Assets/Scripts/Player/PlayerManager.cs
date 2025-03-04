@@ -8,7 +8,7 @@ public class PlayerManager : MonoBehaviour
     public static PlayerManager Instance;
     
     public List<Player> players = new List<Player>();
-    public GameObject playerPrefab;
+    public GameObject playerPrefab; // this is just for testing 
     private void Awake()
     {
         if (Instance == null)
@@ -22,16 +22,20 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void AddPlayer(Player player)
+    public void AddPlayer(GameObject player)
     {
-        players.Add(player);
+        player.GetComponent<Player>().playerID = players.Count;
+        
+        players.Add(player.GetComponent<Player>());
     }
 
-    public void ConnectPlayer()
+    public void CharacterSelection()
     {
-        // players[0].device  = connectedDevice;
+        foreach (var player in players)
+        {
+            player.OnCharacterSelectStart();
+        }
     }
-    
     public void RemovePlayer(int playerID)
     {
         players.RemoveAt(playerID);
