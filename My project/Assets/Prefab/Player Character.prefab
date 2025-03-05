@@ -97,6 +97,7 @@ MonoBehaviour:
   touchedDeathZone: 0
   cameraFollowWeight: 50
   cameraFollowRadius: 20
+  rb: {fileID: 0}
 --- !u!33 &6690541187038955909
 MeshFilter:
   m_ObjectHideFlags: 0

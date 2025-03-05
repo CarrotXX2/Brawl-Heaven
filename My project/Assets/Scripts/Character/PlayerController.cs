@@ -499,9 +499,16 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void DetectHits(Collider attackCollider, AttackData attackData)
     {
-        // Check for overlaps with other colliders/players
-        Collider[] hitObjects = Physics.OverlapBox(attackCollider.bounds.center, attackCollider.bounds.extents, attackCollider.transform.rotation, player);
-       
+        // Corrected size calculation to ensure full detection
+        Vector3 boxSize = attackCollider.bounds.size; 
+
+        Collider[] hitObjects = Physics.OverlapBox(
+            attackCollider.bounds.center,
+            boxSize,
+            attackCollider.transform.rotation,
+            player
+        );
+
         foreach (var hit in hitObjects)
         {
             IDamageable damageable = hit.GetComponent<IDamageable>();
@@ -616,11 +623,20 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     #region Death
 
+    private void OnTriggerEnter(Collider other) // When you hit the outer borders the player should die 
+    {
+        if (other.CompareTag("Border"))
+        {
+            touchedDeathZone = true;
+            OnStockLost();
+        }
+    }
     private void OnStockLost()
     {
         // play particle and death sound
         stocks--;
         rb.isKinematic = true;
+        
         if (stocks > 0)
         {
             Respawn();
@@ -629,7 +645,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             Die();
         }
-        
     }
 
     private void Respawn()
@@ -646,14 +661,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     #endregion
 
-    private void OnTriggerEnter(Collider other) // When you hit the outer borders the player should die 
-    {
-        if (other.CompareTag("Border"))
-        {
-            touchedDeathZone = true;
-            OnStockLost();
-        }
-    }
     
     private void ChangeUI()
     {

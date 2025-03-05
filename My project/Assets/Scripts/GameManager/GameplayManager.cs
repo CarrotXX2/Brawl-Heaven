@@ -5,10 +5,6 @@ using UnityEngine;
 public class GameplayManager : MonoBehaviour
 {
     public static GameplayManager Instance;
-
-    [Header("Gameplay")] 
-    public bool gameStarted = true;
-    public bool gamePaused;
     
     [Header("Players")]
     public List<GameObject> players = new List<GameObject>();
@@ -27,11 +23,19 @@ public class GameplayManager : MonoBehaviour
     {
         Instance = this;
     }
+
+    private void Start()
+    {
+       Invoke("SpawnPlayers", 3);
+    }    
     public void SpawnPlayers()
     {
         for (int i = 0; i < players.Count; i++)
         {
+            players[i].SetActive(true);
             players[i].transform.position = startSpawnPoints[i].position;
+            
+            print($"Player {i} spawned");
         }
     }
     public IEnumerator RespawnPlayer(GameObject player)

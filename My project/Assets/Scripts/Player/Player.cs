@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.Users;
 using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour
@@ -43,8 +44,31 @@ public class Player : MonoBehaviour
         {
             OnCharacterSelectStart();
         }
+        
+    }
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+    {
+        GameplayManager gameplayManager = GameplayManager.Instance;
+
+        if (gameplayManager != null)
+        {
+            gameplayManager.players.Add(gameObject);
+            
+            gameplayManager.playersAlive.Add(gameObject);
+        }
+        
+        gameObject.SetActive(false);
+    }
     #region Character Selection
 
     public void OnCharacterSelectStart()
