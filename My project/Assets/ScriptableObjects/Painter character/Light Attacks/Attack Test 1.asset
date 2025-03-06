@@ -16,10 +16,12 @@ MonoBehaviour:
   animation: {fileID: 0}
   damage: 10
   knockback: 59.22
-  knockUp: 0
   hitDirection: {x: 0.75, y: 0.75}
+  moveDuration: 1
   unstoppable: 1
   hitStun: 0.2
   startupTime: 0.2
   activeTime: 0.5
-  moveDuration: 1
+  moveOnAttack: 0
+  movementDirection: {x: 0, y: 10}
+  moveForce: 25

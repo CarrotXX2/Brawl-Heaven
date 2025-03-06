@@ -65,10 +65,13 @@ MonoBehaviour:
   doubleTapThreshold: 0.25
   deadZoneTreshold: 0.7
   lastTapTime: 13.483644
-  groundLayer:
+  groundCheckLayer:
     serializedVersion: 2
     m_Bits: 8
   groundCheckDistance: 0.6
+  ledgeLayer:
+    serializedVersion: 2
+    m_Bits: 128
   weight: 100
   minLaunchForce: 5
   player:

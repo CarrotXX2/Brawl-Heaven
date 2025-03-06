@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 [Flags]
@@ -65,11 +65,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private bool wasMovingLastFrame; // Flag to check if you moved last frame
 
     [Header("Ground Check")] [SerializeField]
-    private LayerMask groundLayer; // The ground layer, used for checking if the player is grounded 
+    private LayerMask groundCheckLayer; // The ground layer, used for checking if the player is grounded 
 
     [SerializeField]
     private float groundCheckDistance; // Half of the characters height + a little bit for ground check raycast
-
+    
+    [Header("LedgeGrab Check")]
+    [SerializeField] private LayerMask ledgeLayer;
+    
     [Header("Launch Logic")] [SerializeField]
     private int weight; // Weight determines the players knockback, heavier weight less knockback
 
@@ -308,7 +311,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
 
         // Shoot a lineCast in front and back of the player to check for a ledgegrabbable ledge 
-        if (!Physics.Linecast(lineDownStart, lineDownEnd, out RaycastHit downHit, groundLayer))
+        if (!Physics.Linecast(lineDownStart, lineDownEnd, out RaycastHit downHit, ledgeLayer))
             return;
 
         Vector3 lineForwardStart = new Vector3(transform.position.x, downHit.point.y, transform.position.z);
@@ -317,7 +320,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         Debug.DrawLine(lineForwardStart, lineForwardEnd, Color.green, 2f);
 
         // Shoot a lineCast at the height of the previous hitpoint to check where the ledge is
-        if (!Physics.Linecast(lineForwardStart, lineForwardEnd, out RaycastHit forwardHit, groundLayer))
+        if (!Physics.Linecast(lineForwardStart, lineForwardEnd, out RaycastHit forwardHit, ledgeLayer))
             return;
 
         // Player shouldn't be affected by forces when ledgegrabbing 
@@ -330,6 +333,15 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         Vector3 hangPosition = new Vector3(forwardHit.point.x, downHit.point.y, forwardHit.point.z);
         Vector3 targetOffset = -direction * 0.1f + Vector3.up * -0.5f;
 
+        Vector3 lookDirection = (forwardHit.point - transform.position).normalized;
+        lookDirection.y = 0; // Keep only horizontal rotation
+
+        // Apply rotation only on the Y-axis
+        if (lookDirection != Vector3.zero) // Prevents errors when direction is (0,0,0)
+        {
+            transform.rotation = Quaternion.LookRotation(lookDirection);
+        }
+        
         transform.position = hangPosition + targetOffset;
     }
     private bool HasState(MovementState state) => (movementState & state) != 0;
@@ -353,8 +365,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         if ((movementState & MovementState.Dashing) != 0) return true;
 
-        bool grounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
-
+        bool grounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundCheckLayer);
+        
         if (grounded)
         {
             movementState = MovementState.Grounded;
@@ -382,8 +394,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         if (!ctx.started || !CanPerformAction() || !CanAttack()) return;
         
-        rb.velocity = Vector2.zero;
-        
         string direction = GetAttackDirection(moveInput);
         string moveName = $"{movementState.ToString()} {direction}";
 
@@ -397,7 +407,15 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         if (currentAttack != null)
         {
-            StartCoroutine(PerformAttack(currentAttack, colliders));
+            if (currentAttack.moveOnAttack)
+            {
+                StartCoroutine(PerformAttack(currentAttack, colliders, currentAttack.moveOnAttack));
+            }
+            else
+            {
+                StartCoroutine(PerformAttack(currentAttack, colliders));
+            }
+            
         }
         else
         {
@@ -411,8 +429,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     public void OnHeavytAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started || !CanPerformAction() || !CanAttack()) return;
-        
-        rb.velocity = Vector2.zero;
         
         string direction = GetAttackDirection(moveInput);
         string moveName = $"{movementState.ToString()} {direction}";
@@ -469,7 +485,44 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
     {
         combatState = CombatState.Attacking;
+        
+        rb.velocity = Vector2.zero;
+        
+        if (attackData.unstoppable) // If the attack has the property unstoppable it won't get cancelled when hit
+        {
+            combatState = (CombatState)(byte)18; 
+        }
+        performingAttack = true;
 
+        yield return new WaitForSeconds(attackData.startupTime);
+
+        foreach (var collider in colliders)
+        {
+            collider.enabled = true;
+            DetectHits(collider, attackData);
+        }
+
+        yield return new WaitForSeconds(attackData.activeTime);
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            colliders[i].enabled = false;
+        }
+
+        yield return new WaitForSeconds(attackData.moveDuration);
+
+        combatState = CombatState.Neutral;
+        performingAttack = false;
+    }
+    
+    // Should move is a blank variable, just so I can overide the other performAttack
+    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders, bool shouldMove) 
+    {
+        combatState = CombatState.Attacking;
+
+        Vector3 direction = attackData.movementDirection;
+        rb.AddForce(direction, ForceMode.Impulse);
+        
         if (attackData.unstoppable) // If the attack has the property unstoppable it won't get cancelled when hit
         {
             combatState = (CombatState)(byte)18; 
