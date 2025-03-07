@@ -72,6 +72,7 @@ MonoBehaviour:
   ledgeLayer:
     serializedVersion: 2
     m_Bits: 128
+  lineCastTransform: {fileID: 0}
   weight: 100
   minLaunchForce: 5
   player:

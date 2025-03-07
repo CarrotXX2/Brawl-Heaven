@@ -1539,7 +1539,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 976de186f26c38842b239c7615b53774, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterPrefab: {fileID: 1962034553825896291, guid: 76e2aecc65508ca43acb7384b332289b,
+  characterPrefab: {fileID: 3162638916672813035, guid: 762b8df8e911ae349bc6b8f06e82f3f3,
     type: 3}
   onButtonPressed:
     m_PersistentCalls:

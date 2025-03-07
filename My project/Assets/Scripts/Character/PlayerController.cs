@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -13,7 +14,8 @@ public enum MovementState : byte // I can have more than 1 states active in one 
     InAir = 2,
     Dashing = 4,
     Launched = 8,
-    LedgeGrabbing = 16,
+    Falling = 16,
+    LedgeGrabbing = 32,
 }
 
 [Flags]
@@ -72,6 +74,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("LedgeGrab Check")]
     [SerializeField] private LayerMask ledgeLayer;
+    [SerializeField] private Transform lineCastTransform;
     
     [Header("Launch Logic")] [SerializeField]
     private int weight; // Weight determines the players knockback, heavier weight less knockback
@@ -123,11 +126,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [Header("Component references")] [SerializeField]
     private Rigidbody rb;
+
+    private Animator animator;
     
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
         
         combatState = CombatState.Neutral; 
         
@@ -155,8 +161,11 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         IsGrounded();
         LedgeGrab();
         Blocking();
+        
+        AnimationStates(); // Manages the animations
     }
 
+  
     private void FixedUpdate() // Use FixedUpdate for physics
     {
         ApplyGravity();
@@ -264,7 +273,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public void OnDash(InputAction.CallbackContext ctx)
     {
-        if (!CanPerformAction() || !ctx.performed || moveInput.x == 0) return;
+        if (!CanPerformAction() || !ctx.performed || moveInput.x == 0 || movementState == MovementState.InAir) return;
         
         Dash(moveInput.x);
         
@@ -305,8 +314,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void TryLedgeGrab(Vector3 direction)
     {
         // Make a begin and end position for the linecast based on players height 
-        Vector3 lineDownStart = transform.position + Vector3.up * 1.2f + direction;
-        Vector3 lineDownEnd = transform.position + Vector3.down * 0.4f + direction;
+        Vector3 lineDownStart = lineCastTransform.position + Vector3.up * 1.2f + direction;
+        Vector3 lineDownEnd = lineCastTransform.position + Vector3.up * 1f + direction;
 
         Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
 
@@ -365,7 +374,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         if ((movementState & MovementState.Dashing) != 0) return true;
 
-        bool grounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundCheckLayer);
+        bool grounded = Physics.Raycast(lineCastTransform.position, Vector3.down, groundCheckDistance, groundCheckLayer);
         
         if (grounded)
         {
@@ -485,6 +494,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
     {
         combatState = CombatState.Attacking;
+        animator.SetTrigger(attackData.animation.name);
         
         rb.velocity = Vector2.zero;
         
@@ -519,7 +529,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders, bool shouldMove) 
     {
         combatState = CombatState.Attacking;
-
+        
+        animator.SetTrigger(attackData.animation.name);
         Vector3 direction = attackData.movementDirection;
         rb.AddForce(direction, ForceMode.Impulse);
         
@@ -565,6 +576,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         foreach (var hit in hitObjects)
         {
             IDamageable damageable = hit.GetComponent<IDamageable>();
+            
+            // Ignore self
+            if (hit.gameObject == gameObject) continue;
+            
             if (damageable != null)
             {
                 damageable.TakeDamage(attackData, transform);
@@ -714,10 +729,60 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     #endregion
 
+    #region Animator
+
+    private void AnimationStates() // Sets animation bools based on state
+    {
+        switch (combatState)
+        {
+            case CombatState.Attacking:
+                
+                break;
+            case CombatState.Blocking:
+                
+                break;
+            case CombatState.HitStun:
+                
+                break;
+            case CombatState.Neutral:
+                
+                break;
+        }
+
+        switch (movementState)
+        {   
+            case MovementState.Dashing:
+                
+                break;
+            
+            case MovementState.Grounded:
+
+                break;
+            
+            case MovementState.InAir:
+
+                break;
+            
+            case MovementState.Falling:
+
+                break;
+            
+            case MovementState.Launched:
+
+                break;
+            
+            case MovementState.LedgeGrabbing:
+                
+                break;
+        }
+    }
+
+
+    #endregion
     
     private void ChangeUI()
     {
-
+       
     }
 
     [Serializable]
