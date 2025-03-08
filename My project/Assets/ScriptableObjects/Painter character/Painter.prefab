@@ -1920,8 +1920,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.3948206, y: 1.176921, z: 0.42157173}
-  m_Center: {x: -0.024182096, y: 0.5914281, z: 0.0055214465}
+  m_Size: {x: 0.37165064, y: 1.176921, z: 0.42157173}
+  m_Center: {x: -0.012597106, y: 0.5914281, z: 0.0055214465}
 --- !u!54 &-7370835081244329500
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1972,7 +1972,7 @@ MonoBehaviour:
   maxJumps: 3
   jumpsLeft: 0
   dashForce: 20
-  dashTime: 0.05
+  dashTime: 0.075
   doubleTapThreshold: 0.25
   deadZoneTreshold: 0.7
   lastTapTime: 0
@@ -1993,9 +1993,33 @@ MonoBehaviour:
   - attackName: Grounded Neutral
     collider:
     - {fileID: 7395061679694579562}
+  - attackName: Grounded Left
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Right
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Up
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Down
+    collider:
+    - {fileID: 7395061679694579562}
   - attackName: InAir Neutral
     collider:
-    - {fileID: 4573148213912899759, guid: 76e2aecc65508ca43acb7384b332289b, type: 3}
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Left
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Right
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Up
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Down
+    collider:
+    - {fileID: 7395061679694579562}
   heavyHitboxList:
   - attackName: 
     collider: []
@@ -2003,7 +2027,15 @@ MonoBehaviour:
     collider: []
   attackData:
   - {fileID: 11400000, guid: 1d981c7e5dc3e0d4e8d66966af58da9c, type: 2}
-  - {fileID: 11400000, guid: 33f5737a0afed4c40bb32a855b1bd180, type: 2}
+  - {fileID: 11400000, guid: 57de355084efab54989f09d773128db3, type: 2}
+  - {fileID: 11400000, guid: c025c05b03239834e8b013cbae535a52, type: 2}
+  - {fileID: 11400000, guid: 8ec3bd6204831fe40bea139931d8ced1, type: 2}
+  - {fileID: 11400000, guid: 002f858ede19fa348b027d343a7019cd, type: 2}
+  - {fileID: 11400000, guid: a598df46b2b603846a319de09f841efb, type: 2}
+  - {fileID: 11400000, guid: 8486a673d193774409f4bf1d95842154, type: 2}
+  - {fileID: 11400000, guid: 7ba2cbfd908e6204fb2f32d3ca65a693, type: 2}
+  - {fileID: 11400000, guid: d620f1717a36d3248a35705094521e8b, type: 2}
+  - {fileID: 11400000, guid: e54a94f453274484e9074159d4041ff1, type: 2}
   totalBlockingTime: 4
   currentBlockingTime: 4
   blockRechargeTime: 1

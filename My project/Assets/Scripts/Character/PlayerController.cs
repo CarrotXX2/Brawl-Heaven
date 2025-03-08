@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 [Flags]
@@ -14,8 +12,7 @@ public enum MovementState : byte // I can have more than 1 states active in one 
     InAir = 2,
     Dashing = 4,
     Launched = 8,
-    Falling = 16,
-    LedgeGrabbing = 32,
+    LedgeGrabbing = 16,
 }
 
 [Flags]
@@ -123,10 +120,13 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private float cameraFollowWeight;
 
     [SerializeField] private float cameraFollowRadius;
-
+    
+    [Header("Animation Logic")]
+    private string lastAnimation;
+    private bool isTriggerActive = false;
+    
     [Header("Component references")] [SerializeField]
     private Rigidbody rb;
-
     private Animator animator;
     
 
@@ -251,13 +251,15 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 if (jumpsLeft > 0 && ctx.performed)
                 {
                     jumpsLeft--;
-
+                    
+                    SetTriggerAnimation("Jump");
+                    
                     rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
                 }
 
                 break;
             case MovementState.LedgeGrabbing:
-
+                SetTriggerAnimation("Jump");
                 rb.isKinematic = false;
                 movementState = MovementState.InAir;
                 rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
@@ -281,7 +283,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void Dash(float direction)
     {
         direction = Mathf.Sign(direction);
-
+        
+        SetTriggerAnimation("Dash");
         Vector3 dashVelocity = new Vector3(dashForce * direction, 0, 0);
         dashVelocity.y = rb.velocity.y; // Preserve gravity effect
         rb.velocity = dashVelocity;
@@ -291,7 +294,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private IEnumerator EndDash()
     {
-        print("Dashing");
         movementState = IsGrounded() ? (MovementState)(byte)5 : (MovementState)(byte)6;
 
         yield return new WaitForSeconds(dashTime); // Wait for dash duration
@@ -494,7 +496,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
     {
         combatState = CombatState.Attacking;
-        animator.SetTrigger(attackData.animation.name);
+        
+        SetTriggerAnimation(attackData.animation.name);
+        print(attackData.animation.name);
         
         rb.velocity = Vector2.zero;
         
@@ -530,7 +534,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         combatState = CombatState.Attacking;
         
-        animator.SetTrigger(attackData.animation.name);
+        SetTriggerAnimation(attackData.animation.name);
         Vector3 direction = attackData.movementDirection;
         rb.AddForce(direction, ForceMode.Impulse);
         
@@ -628,11 +632,18 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             StopCoroutine(PerformAttack(null, null));
         }
 
+        yield return null;
+
         yield return new WaitForSeconds(attackData.hitStun);
 
         combatState = CombatState.Neutral;
     }
 
+    protected virtual void OnUltimateCast()
+    {
+        // Every Character (if we add more) Has their own ultimate 
+    }
+    
     #endregion
 
     #region Blocking Logic
@@ -732,12 +743,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     #region Animator
 
     private void AnimationStates() // Sets animation bools based on state
-    {
+    { 
         switch (combatState)
         {
-            case CombatState.Attacking:
-                
-                break;
             case CombatState.Blocking:
                 
                 break;
@@ -752,32 +760,70 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         switch (movementState)
         {   
             case MovementState.Dashing:
-                
+              SetAnimation("Dashing");
+                break;
+            case MovementState.Grounded:
+                if (isSprinting)
+                {
+                    SetAnimation("Sprinting");
+                }
+                else if (Mathf.Abs(moveInput.x) > deadZoneTreshold)
+                {
+                   SetAnimation("Walking");
+                }
+                else
+                {
+                    SetAnimation("Idle");
+                }
                 break;
             
-            case MovementState.Grounded:
-
+             case MovementState.Launched:
+                 SetAnimation("Launched");
+                 break;
+             
+            case MovementState.LedgeGrabbing:
+                SetAnimation("LedgeGrabbing");
+                
                 break;
             
             case MovementState.InAir:
-
-                break;
-            
-            case MovementState.Falling:
-
-                break;
-            
-            case MovementState.Launched:
-
-                break;
-            
-            case MovementState.LedgeGrabbing:
-                
+                    SetAnimation("Falling");
                 break;
         }
     }
 
+    private void SetAnimation(string animation)
+    {
+        if (lastAnimation == animation) return; // Prevent resetting the animation
 
+        if (!string.IsNullOrEmpty(lastAnimation)) 
+        {
+            animator.SetBool(lastAnimation, false); // Disable the last animation
+        }
+
+        animator.SetBool(animation, true); // Enable the new animation
+        lastAnimation = animation; // Store the last played animation
+    }
+    
+    private void SetTriggerAnimation(string trigger)
+    {
+        isTriggerActive = true; // Prevent other animations from playing
+        animator.SetTrigger(trigger);
+
+        // Make sure this animation has priority over others 
+        StartCoroutine(WaitForAnimation(trigger));
+    }
+
+    private IEnumerator WaitForAnimation(string trigger)
+    {
+        yield return null; // Wait one frame to ensure the state updates
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        float animationDuration = stateInfo.length; // Get animation duration
+
+        yield return new WaitForSeconds(animationDuration); // Wait until animation finishes 
+        isTriggerActive = false;
+    }
     #endregion
     
     private void ChangeUI()

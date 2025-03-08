@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd707e9130b5c1446a46a3040c9b10fe, type: 3}
   m_Name: InAir Up
   m_EditorClassIdentifier: 
-  attackName: 
+  attackName: InAir Up
   animation: {fileID: 0}
   damage: 0
   knockback: 0
