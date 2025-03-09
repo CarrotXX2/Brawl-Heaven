@@ -122,12 +122,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float cameraFollowRadius;
     
     [Header("Animation Logic")]
-    private string lastAnimation;
-    private bool isTriggerActive = false;
+    protected string lastAnimation;
+    protected bool isTriggerActive = false;
     
     [Header("Component references")] [SerializeField]
-    private Rigidbody rb;
-    private Animator animator;
+    protected Rigidbody rb;
+    protected Animator animator;
     
 
     private void Awake()
@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         ResetJumps();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         IsGrounded();
         LedgeGrab();
@@ -168,8 +168,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
   
     private void FixedUpdate() // Use FixedUpdate for physics
     {
-        ApplyGravity();
-        Move();
+        if (!rb.isKinematic)
+        { 
+            ApplyGravity();
+            Move();
+        }
+   
     }
 
     #region Movement
@@ -639,7 +643,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         combatState = CombatState.Neutral;
     }
 
-    protected virtual void OnUltimateCast()
+    public virtual void OnUltimateCast()
     {
         // Every Character (if we add more) Has their own ultimate 
     }

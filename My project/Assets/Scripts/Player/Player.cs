@@ -216,6 +216,12 @@ public class Player : MonoBehaviour
         playerController.OnHeavytAttack(ctx);
     }
 
+    public void OnUltimateCursorMove() // TODO get paintercharacter script reference
+    {
+        if (!CanPerformCharacterActions()) return;
+       // playerController.OnHeavytAttack(ctx);
+    }
+
     private bool CanPerformCharacterActions()
     {
         return playerController != null;

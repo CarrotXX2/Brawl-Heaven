@@ -1884,6 +1884,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1432175682316567258}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8b825605a771d894c9b7ab866fdccc42,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4046186433878050419}
     - targetCorrespondingSourceObject: {fileID: 6827580803986401361, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       insertIndex: -1
@@ -2045,6 +2049,64 @@ MonoBehaviour:
   cameraFollowWeight: 50
   cameraFollowRadius: 20
   rb: {fileID: 0}
+--- !u!114 &4046186433878050419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3162638916672813035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4734bfd3cc6f1b4fbd3a9f722a3bf6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementState: 1
+  combatState: 1
+  totalDamageTaken: 0
+  stocks: 3
+  movementSpeed: 5
+  sprintMultiplier: 1.7
+  gravityForce: 20
+  jumpForce: 10
+  maxJumps: 3
+  jumpsLeft: 0
+  dashForce: 20
+  dashTime: 0.075
+  doubleTapThreshold: 0.25
+  deadZoneTreshold: 0.6
+  lastTapTime: 0
+  groundCheckLayer:
+    serializedVersion: 2
+    m_Bits: 136
+  groundCheckDistance: 0
+  ledgeLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  lineCastTransform: {fileID: 0}
+  weight: 0
+  minLaunchForce: 0
+  player:
+    serializedVersion: 2
+    m_Bits: 0
+  lightHitboxList: []
+  heavyHitboxList: []
+  attackData: []
+  totalBlockingTime: 0
+  currentBlockingTime: 0
+  blockRechargeTime: 0
+  shieldReductionFactor: 0
+  respawnTime: 0
+  touchedDeathZone: 0
+  cameraFollowWeight: 0
+  cameraFollowRadius: 0
+  rb: {fileID: 0}
+  ultimateDuration: 0
+  cursor: {fileID: 0}
+  cursorInstance: {fileID: 0}
+  cursorPosition: {x: 0, y: 0}
+  moveInput: {x: 0, y: 0}
+  cursorSpeed: 0
 --- !u!1 &8782839604776821483 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6827580803986401361, guid: 8b825605a771d894c9b7ab866fdccc42,
