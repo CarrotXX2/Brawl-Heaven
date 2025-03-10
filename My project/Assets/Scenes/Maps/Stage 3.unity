@@ -457,12 +457,12 @@ PrefabInstance:
     - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8870109
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.46174863
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
@@ -477,7 +477,7 @@ PrefabInstance:
     - target: {fileID: 2388800811482508490, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -55
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2690536737768598668, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
@@ -639,10 +639,20 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
+    - target: {fileID: 8376673968164800657, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_Intensity
+      value: 0.59
+      objectReference: {fileID: 0}
     - target: {fileID: 8383466855220233607, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 8458274048153675685, guid: 1a305f95246fdc545974793a78cfac97,
+        type: 3}
+      propertyPath: m_Intensity
+      value: 0.03
       objectReference: {fileID: 0}
     - target: {fileID: 8693005888236739517, guid: 1a305f95246fdc545974793a78cfac97,
         type: 3}
