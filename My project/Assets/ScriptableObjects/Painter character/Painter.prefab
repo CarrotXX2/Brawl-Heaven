@@ -149,6 +149,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b825605a771d894c9b7ab866fdccc42,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -8656151528382764182, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       propertyPath: m_Layer
@@ -1883,11 +1888,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1432175682316567258}
+      addedObject: {fileID: 4046186433878050419}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4046186433878050419}
+      addedObject: {fileID: 1432175682316567258}
     - targetCorrespondingSourceObject: {fileID: 6827580803986401361, guid: 8b825605a771d894c9b7ab866fdccc42,
         type: 3}
       insertIndex: -1
@@ -1953,7 +1958,7 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 120
   m_CollisionDetection: 0
---- !u!114 &1432175682316567258
+--- !u!114 &4046186433878050419
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1962,6 +1967,104 @@ MonoBehaviour:
   m_GameObject: {fileID: 3162638916672813035}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4734bfd3cc6f1b4fbd3a9f722a3bf6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementState: 1
+  combatState: 1
+  totalDamageTaken: 0
+  stocks: 3
+  moveInput: {x: 0, y: 0}
+  movementSpeed: 5
+  sprintMultiplier: 1.7
+  gravityForce: 20
+  jumpForce: 10
+  maxJumps: 3
+  jumpsLeft: 0
+  dashForce: 20
+  dashTime: 0.075
+  doubleTapThreshold: 0.25
+  deadZoneTreshold: 0.6
+  lastTapTime: 0
+  groundCheckLayer:
+    serializedVersion: 2
+    m_Bits: 136
+  groundCheckDistance: 0.7
+  ledgeLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  lineCastTransform: {fileID: 2839504151673921883}
+  weight: 100
+  minLaunchForce: 1
+  player:
+    serializedVersion: 2
+    m_Bits: 64
+  lightHitboxList:
+  - attackName: Grounded Neutral
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Left
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Right
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Up
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Grounded Down
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Neutral
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Left
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Right
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Up
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: InAir Down
+    collider:
+    - {fileID: 7395061679694579562}
+  heavyHitboxList: []
+  attackData:
+  - {fileID: 11400000, guid: 002f858ede19fa348b027d343a7019cd, type: 2}
+  - {fileID: 11400000, guid: 57de355084efab54989f09d773128db3, type: 2}
+  - {fileID: 11400000, guid: 1d981c7e5dc3e0d4e8d66966af58da9c, type: 2}
+  - {fileID: 11400000, guid: c025c05b03239834e8b013cbae535a52, type: 2}
+  - {fileID: 11400000, guid: 8ec3bd6204831fe40bea139931d8ced1, type: 2}
+  - {fileID: 11400000, guid: e54a94f453274484e9074159d4041ff1, type: 2}
+  - {fileID: 11400000, guid: 8486a673d193774409f4bf1d95842154, type: 2}
+  - {fileID: 11400000, guid: a598df46b2b603846a319de09f841efb, type: 2}
+  - {fileID: 11400000, guid: 7ba2cbfd908e6204fb2f32d3ca65a693, type: 2}
+  - {fileID: 11400000, guid: d620f1717a36d3248a35705094521e8b, type: 2}
+  totalBlockingTime: 4
+  currentBlockingTime: 4
+  blockRechargeTime: 1
+  shieldReductionFactor: 0.2
+  respawnTime: 2
+  touchedDeathZone: 0
+  cameraFollowWeight: 0
+  cameraFollowRadius: 0
+  groundedDrag: 0
+  inAirDrag: 0
+  ultimateDuration: 0
+  cursor: {fileID: 621779072663708013, guid: e923f85ed6aa80649b15d4c451d1e454, type: 3}
+  cursorInstance: {fileID: 0}
+  cursorSpeed: 50
+--- !u!114 &1432175682316567258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3162638916672813035}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97ff19ae82107e349baae259553d6d3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1969,6 +2072,7 @@ MonoBehaviour:
   combatState: 0
   totalDamageTaken: 0
   stocks: 3
+  moveInput: {x: 0, y: 0}
   movementSpeed: 5
   sprintMultiplier: 1.7
   gravityForce: 20
@@ -2048,65 +2152,8 @@ MonoBehaviour:
   touchedDeathZone: 0
   cameraFollowWeight: 50
   cameraFollowRadius: 20
-  rb: {fileID: 0}
---- !u!114 &4046186433878050419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3162638916672813035}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4734bfd3cc6f1b4fbd3a9f722a3bf6b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementState: 1
-  combatState: 1
-  totalDamageTaken: 0
-  stocks: 3
-  movementSpeed: 5
-  sprintMultiplier: 1.7
-  gravityForce: 20
-  jumpForce: 10
-  maxJumps: 3
-  jumpsLeft: 0
-  dashForce: 20
-  dashTime: 0.075
-  doubleTapThreshold: 0.25
-  deadZoneTreshold: 0.6
-  lastTapTime: 0
-  groundCheckLayer:
-    serializedVersion: 2
-    m_Bits: 136
-  groundCheckDistance: 0
-  ledgeLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  lineCastTransform: {fileID: 0}
-  weight: 0
-  minLaunchForce: 0
-  player:
-    serializedVersion: 2
-    m_Bits: 0
-  lightHitboxList: []
-  heavyHitboxList: []
-  attackData: []
-  totalBlockingTime: 0
-  currentBlockingTime: 0
-  blockRechargeTime: 0
-  shieldReductionFactor: 0
-  respawnTime: 0
-  touchedDeathZone: 0
-  cameraFollowWeight: 0
-  cameraFollowRadius: 0
-  rb: {fileID: 0}
-  ultimateDuration: 0
-  cursor: {fileID: 0}
-  cursorInstance: {fileID: 0}
-  cursorPosition: {x: 0, y: 0}
-  moveInput: {x: 0, y: 0}
-  cursorSpeed: 0
+  groundedDrag: 0
+  inAirDrag: 0
 --- !u!1 &8782839604776821483 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6827580803986401361, guid: 8b825605a771d894c9b7ab866fdccc42,

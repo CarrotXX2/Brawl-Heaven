@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private int stocks;
 
     [Header("Movement Stats")]
-    private Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
+    [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
 
     [SerializeField] private float movementSpeed; // Base movementspeed
     [SerializeField] private float sprintMultiplier; // Multiplies the base movementspeed for a sprint speed
@@ -116,8 +116,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     public bool touchedDeathZone;
 
     [Header("Camera Control")] // Need to change camera logic 
-    [SerializeField]
-    private float cameraFollowWeight;
+    [SerializeField] private float cameraFollowWeight;
 
     [SerializeField] private float cameraFollowRadius;
     
@@ -125,8 +124,13 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     protected string lastAnimation;
     protected bool isTriggerActive = false;
     
-    [Header("Component references")] [SerializeField]
+    [Header("RB logic")]
     protected Rigidbody rb;
+
+    [SerializeField] private float groundedDrag;
+    [SerializeField] private float inAirDrag;
+    
+    [Header("Animator Reference")]
     protected Animator animator;
     
 
@@ -385,10 +389,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if (grounded)
         {
             movementState = MovementState.Grounded;
+            rb.drag = groundedDrag;
         }
         else if (movementState != MovementState.LedgeGrabbing)
         {
             movementState = MovementState.InAir;
+            rb.drag = inAirDrag;
         }
 
         return true;
@@ -643,7 +649,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         combatState = CombatState.Neutral;
     }
 
-    public virtual void OnUltimateCast()
+    public virtual void OnUltimateCast(InputAction.CallbackContext ctx)
     {
         // Every Character (if we add more) Has their own ultimate 
     }

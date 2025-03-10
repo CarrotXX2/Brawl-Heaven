@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -35,7 +36,7 @@ public class PainterCharacter : PlayerController
         }
         else
         {
-            MoveCursor();
+            MoveUltimateCursor();
             
             if (startDrawing)
             {
@@ -44,31 +45,45 @@ public class PainterCharacter : PlayerController
         }
     }
     
-    public override void OnUltimateCast() // Draw a shape and give it a property
-    {   
+    public override void OnUltimateCast(InputAction.CallbackContext ctx) // Draw a shape and give it a property
+    {
+        if (!ctx.started) return;
+        
         rb.isKinematic = true; // Player cant move or fall while drawing 
         
-        cursorInstance = Instantiate(cursor, transform);
+        print("Cast Ultimate");
+        
+        cursorInstance = Instantiate(cursor, transform.position, quaternion.identity);
         
         StartCoroutine(UltimateCoroutine());
     }
     private IEnumerator UltimateCoroutine()
     {
         usingUltimate = true;
-        yield return new WaitForSeconds(5); // Wait for an animation to finish playing before player is allowed to draw 
+        // Wait for an animation to finish playing before player is allowed to draw 
         startDrawing = true;
         
-        yield return new WaitForSeconds(ultimateDuration);
-        
+        yield return new WaitForSeconds(ultimateDuration + 5);
+
+        cursorInstance = null;
         rb.isKinematic = false;
         usingUltimate = false;
         startDrawing = false;
     }
     
-    public void OnMoveCursor(InputAction.CallbackContext context)
+    private void MoveUltimateCursor()
     {
-        cursorMoveInput = context.ReadValue<Vector2>();
-    }
+        cursorMoveInput = moveInput;
+        
+        cursorPosition += cursorMoveInput * cursorSpeed * Time.deltaTime;
+
+        // Clamp cursor position to stay within screen bounds
+       // cursorPosition.x = Mathf.Clamp(cursorPosition.x, 0, Screen.width);
+       // cursorPosition.y = Mathf.Clamp(cursorPosition.y, 0, Screen.height);
+
+        // Move the cursor in UI
+        cursorInstance.GetComponent<Transform>().position = cursorPosition;
+    }   
 
     private void DrawShape()
     {
@@ -192,17 +207,6 @@ public class PainterCharacter : PlayerController
         newMeshObject.AddComponent<MeshCollider>();
     }
     
-    private void MoveCursor()
-    {
-        cursorPosition += cursorMoveInput * cursorSpeed * Time.deltaTime;
-
-        // Clamp cursor position to stay within screen bounds
-        cursorPosition.x = Mathf.Clamp(cursorPosition.x, 0, Screen.width);
-        cursorPosition.y = Mathf.Clamp(cursorPosition.y, 0, Screen.height);
-
-        // Move the cursor in UI
-        cursorInstance.GetComponent<Transform>().position = cursorPosition;
-    }   
 
     private void ConfirmSelection()
     {

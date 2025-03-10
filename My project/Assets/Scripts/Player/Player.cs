@@ -216,10 +216,10 @@ public class Player : MonoBehaviour
         playerController.OnHeavytAttack(ctx);
     }
 
-    public void OnUltimateCursorMove() // TODO get paintercharacter script reference
+    public void OnUltimateCast(InputAction.CallbackContext ctx) 
     {
         if (!CanPerformCharacterActions()) return;
-       // playerController.OnHeavytAttack(ctx);
+        playerController.OnUltimateCast(ctx);
     }
 
     private bool CanPerformCharacterActions()

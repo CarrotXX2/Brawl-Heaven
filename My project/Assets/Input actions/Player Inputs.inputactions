@@ -170,10 +170,10 @@
                 {
                     "name": "",
                     "id": "953c1e50-aa49-4126-9586-253a1e948d52",
-                    "path": "",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Gamepad",
                     "action": "Ultimate",
                     "isComposite": false,
                     "isPartOfComposite": false
