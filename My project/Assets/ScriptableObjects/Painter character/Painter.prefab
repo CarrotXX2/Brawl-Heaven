@@ -2055,7 +2055,7 @@ MonoBehaviour:
   ultimateDuration: 0
   cursor: {fileID: 621779072663708013, guid: e923f85ed6aa80649b15d4c451d1e454, type: 3}
   cursorInstance: {fileID: 0}
-  cursorSpeed: 50
+  cursorSpeed: 5
 --- !u!114 &1432175682316567258
 MonoBehaviour:
   m_ObjectHideFlags: 0

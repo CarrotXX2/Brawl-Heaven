@@ -49,6 +49,7 @@ public class PainterCharacter : PlayerController
     {
         if (!ctx.started) return;
         
+        drawnPoints.Clear();
         rb.isKinematic = true; // Player cant move or fall while drawing 
         
         print("Cast Ultimate");
@@ -64,8 +65,15 @@ public class PainterCharacter : PlayerController
         startDrawing = true;
         
         yield return new WaitForSeconds(ultimateDuration + 5);
-
-        cursorInstance = null;
+        
+        if (Vector2.Distance(drawnPoints.First(), drawnPoints.Last()) < 5f && drawnPoints.Count >= 3)
+        {
+            drawnPoints.Add(drawnPoints.First()); // Close the loop
+                
+            GenerateMesh();
+        }
+        
+        Destroy(cursorInstance);
         rb.isKinematic = false;
         usingUltimate = false;
         startDrawing = false;
@@ -87,16 +95,11 @@ public class PainterCharacter : PlayerController
 
     private void DrawShape()
     {
-        if (drawnPoints.Count == 0 || Vector3.Distance(cursorPosition, drawnPoints[drawnPoints.Count - 1]) > 0.1f)
+        if (drawnPoints.Count == 0 || Vector3.Distance(cursorPosition, drawnPoints[drawnPoints.Count - 1]) > 0.2f)
         {
             drawnPoints.Add(cursorPosition);
             
-            if (Vector2.Distance(drawnPoints.First(), drawnPoints.Last()) < 0.2f && drawnPoints.Count >= 3)
-            {
-                drawnPoints.Add(drawnPoints.First()); // Close the loop
-                
-               GenerateMesh();
-            }
+          
         }
     }
     private List<int> Triangulate(List<Vector3> vertices)
@@ -120,8 +123,8 @@ public class PainterCharacter : PlayerController
                 if (IsEar(vertices, prev, curr, next, remainingIndices))
                 {
                     indices.Add(prev);
-                    indices.Add(curr);
                     indices.Add(next);
+                    indices.Add(curr);
                     
                     remainingIndices.RemoveAt(i);
                     earFound = true;
@@ -173,41 +176,136 @@ public class PainterCharacter : PlayerController
         return s >= 0 && t >= 0 && (s + t) <= 1;
     }
 
-    private void GenerateMesh()
+ private void GenerateMesh()
+{
+    List<int> triangles = Triangulate(drawnPoints);
+
+    if (triangles.Count == 0) return;
+
+    List<Vector3> vertices = new List<Vector3>();
+    foreach (var point in drawnPoints)
     {
-        List<int> triangles = Triangulate(drawnPoints);
+        vertices.Add(new Vector3(point.x, point.y, 0)); // Ensure vertices are valid and in 3D space
+    }
+
+    // Check if any triangle indices are out of bounds
+    for (int i = 0; i < triangles.Count; i++)
+    {
+        if (triangles[i] >= vertices.Count) 
+        {
+            Debug.LogWarning($"Triangle index {triangles[i]} is out of bounds! Capping the index.");
+            triangles[i] = Mathf.Min(triangles[i], vertices.Count - 1); // Cap the index to the last valid vertex
+        }
+    }
+
+    Mesh mesh = new Mesh();
+    mesh.vertices = vertices.ToArray();
+    mesh.triangles = triangles.ToArray();
+    mesh.RecalculateNormals();
+
+    // Create a new GameObject to hold the mesh
+    GameObject newMeshObject = new GameObject("GeneratedMesh");
+    if (!newMeshObject)
+    {
+        Debug.LogError("No mesh generated");
+        return;
+    }
+
+    // Add components for visual representation
+    MeshFilter meshFilter = newMeshObject.AddComponent<MeshFilter>();
+    MeshRenderer meshRenderer = newMeshObject.AddComponent<MeshRenderer>();
+    
+    // Assign the generated mesh for visual representation
+    meshFilter.mesh = mesh;
+
+    // Set material 
+    meshRenderer.material = new Material(Shader.Find("Standard"));
+    
+    // Add a Rigidbody to make compound colliders work
+    Rigidbody rb = newMeshObject.AddComponent<Rigidbody>();
+    rb.isKinematic = true; // Make it kinematic so it doesn't fall with gravity
+    
+    // Generate compound colliders
+    GenerateCompoundColliders(newMeshObject, vertices.ToArray(), triangles.ToArray());
+}
+
+private void GenerateCompoundColliders(GameObject parent, Vector3[] vertices, int[] triangles)
+{
+    const int maxTrianglesPerCollider = 20; // Adjust this number based on your needs
+    
+    // Group triangles into chunks for separate colliders
+    for (int startIdx = 0; startIdx < triangles.Length; startIdx += maxTrianglesPerCollider * 3)
+    {
+        // Calculate how many triangles will be in this chunk
+        int triangleCount = Mathf.Min(maxTrianglesPerCollider, (triangles.Length - startIdx) / 3);
+        if (triangleCount <= 0) continue;
         
-        if (triangles.Count == 0) return;
-
-        Mesh mesh = new Mesh();
-        Vector3[] vertices = new Vector3[drawnPoints.Count];
+        // Create a new sub-mesh for this chunk
+        Mesh subMesh = new Mesh();
         
-        for (int i = 0; i < drawnPoints.Count; i++) vertices[i] = new Vector3(drawnPoints[i].x, drawnPoints[i].y, 0);
-
-        mesh.vertices = vertices;
-        mesh.triangles = triangles.ToArray();
-
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
+        // Create a mapping to reindex vertices
+        Dictionary<int, int> vertexMapping = new Dictionary<int, int>();
+        List<Vector3> subVertices = new List<Vector3>();
+        List<int> subTriangles = new List<int>();
         
-        // Create a GameObject 
-        GameObject newMeshObject = new GameObject("GeneratedMesh"); 
-
-        // Add a MeshFilter and MeshRenderer
-        MeshFilter meshFilter = newMeshObject.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = newMeshObject.AddComponent<MeshRenderer>();
-
-        // Assign the generated mesh
-        meshFilter.mesh = mesh;
-
-        // Set material 
-        meshRenderer.material = new Material(Shader.Find("Standard"));
+        // Process each triangle in this chunk
+        for (int i = 0; i < triangleCount * 3; i += 3)
+        {
+            int baseIdx = startIdx + i;
+            if (baseIdx + 2 >= triangles.Length) break;
+            
+            // Get the three vertex indices for this triangle
+            int idx1 = triangles[baseIdx];
+            int idx2 = triangles[baseIdx + 1];
+            int idx3 = triangles[baseIdx + 2];
+            
+            // Map original vertex indices to new indices in the sub-mesh
+            int newIdx1 = MapVertexIndex(vertexMapping, subVertices, vertices, idx1);
+            int newIdx2 = MapVertexIndex(vertexMapping, subVertices, vertices, idx2);
+            int newIdx3 = MapVertexIndex(vertexMapping, subVertices, vertices, idx3);
+            
+            // Add the triangle with the new indices
+            subTriangles.Add(newIdx1);
+            subTriangles.Add(newIdx2);
+            subTriangles.Add(newIdx3);
+        }
         
-        // Set Collider
-        newMeshObject.AddComponent<MeshCollider>();
+        // Skip if we didn't collect any triangles
+        if (subTriangles.Count == 0 || subVertices.Count == 0) continue;
+        
+        // Create the sub-mesh
+        subMesh.vertices = subVertices.ToArray();
+        subMesh.triangles = subTriangles.ToArray();
+        subMesh.RecalculateNormals();
+        
+        // Create a child GameObject for this collider
+        GameObject colliderObj = new GameObject($"Collider_{startIdx/3}");
+        colliderObj.transform.SetParent(parent.transform, false);
+        
+        // Add a mesh collider
+        MeshCollider meshCollider = colliderObj.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = subMesh;
+        meshCollider.convex = true;
+        meshCollider.isTrigger = true;
+    }
+}
+
+private int MapVertexIndex(Dictionary<int, int> mapping, List<Vector3> newVertices, Vector3[] originalVertices, int originalIndex)
+{
+    // If we've already mapped this vertex, return its new index
+    if (mapping.TryGetValue(originalIndex, out int newIndex))
+    {
+        return newIndex;
     }
     
-
+    // Otherwise, add it to our new vertex list and create a mapping
+    newIndex = newVertices.Count;
+    newVertices.Add(originalVertices[originalIndex]);
+    mapping[originalIndex] = newIndex;
+    
+    return newIndex;
+}
+ 
     private void ConfirmSelection()
     {
         

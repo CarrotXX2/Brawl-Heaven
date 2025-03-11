@@ -8,7 +8,10 @@ public class PlayerManager : MonoBehaviour
 {
     public static PlayerManager Instance;
     
-    public List<Player> players = new List<Player>();
+    [Header("Lists")]
+    public List<Player> players = new List<Player>(); // Keeps track of every connected player up to 4
+    public List<MeshCollider> drawings = new List<MeshCollider>(); // Keeps track of every current ultimate on the field
+    
     public GameObject playerPrefab; // this is just for testing 
     private void Awake()
     {
@@ -24,9 +27,20 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    private void Update()
     {
+        if (drawings.Count < 0) return;
         
+        foreach (var player in players)
+        {
+            foreach (var meshCollider in drawings)
+            {
+               /* if (GetDistanceToColliderEdge(player.gameObject, meshCollider) < 0.1f)
+                {
+                    print("player is in collider");
+                }*/
+            }
+        }
     }
 
     public void AddPlayer(GameObject player)
@@ -63,5 +77,22 @@ public class PlayerManager : MonoBehaviour
             player.characterPrefab = playerPrefab;
         }
     }
+
+    public void AddDrawing(MeshCollider collider)
+    {
+        drawings.Add(collider);
+    }
+
+    public void RemoveDrawing(MeshCollider collider)
+    {
+        drawings.Remove(collider);
+    }
     
+   /* float GetDistanceToColliderEdge(GameObject player, MeshCollider meshCollider) 
+    {
+        // Since non-convex mesh cant be a trigger the "Collision" detection is based on distance 
+        
+        Vector3 closestPoint = meshCollider.ClosestPoint(player.transform.position);
+        return Vector3.Distance(player.transform.position, closestPoint);
+    }*/
 }
