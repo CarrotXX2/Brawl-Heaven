@@ -6,11 +6,17 @@ using UnityEngine.UIElements;
 public class AttackData : ScriptableObject
 {
     [Header("Name & Animation")]
-    public string attackName;
-    public AnimationClip animation;
+    public string attackName; // Name of the attack 
+    public AnimationClip animation; // Main attack animation
+    public AnimationClip chargeAnimation; // Heavy attacks have a charge animation
     
     [Header("Attack Properties")]
-    public float damage; 
+    public float damage;
+
+    public bool chargeAttack;
+    public float minChargeDamage;
+    public float maxChargeDamage;
+    
     public float knockback;
     public Vector2 hitDirection; // Direction of the knockback, value should be between 0 and 1
     public float moveDuration;

@@ -96,7 +96,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private List<AttackData> attackData = new List<AttackData>();
 
     private bool performingAttack; // Bool to keep track if the coroutine is ongoing or not
-
+    private bool chargeAttack = false; // Bool to check if 
     [Header("Blocking Logic")] [SerializeField]
     private float totalBlockingTime;
 
@@ -279,8 +279,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 break;
         }
     }
-
-
+    
     public void OnDash(InputAction.CallbackContext ctx)
     {
         if (!CanPerformAction() || !ctx.performed || moveInput.x == 0 || movementState == MovementState.InAir) return;
@@ -428,15 +427,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         if (currentAttack != null)
         {
-            if (currentAttack.moveOnAttack)
-            {
-                StartCoroutine(PerformAttack(currentAttack, colliders, currentAttack.moveOnAttack));
-            }
-            else
-            {
-                StartCoroutine(PerformAttack(currentAttack, colliders));
-            }
-            
+            StartCoroutine(PerformAttack(currentAttack, colliders));
         }
         else
         {
@@ -459,9 +450,26 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             Debug.LogWarning($"{moveName} does not exist");
             return;
         }
-
+        
         AttackData currentAttack = attackData.Find(attack => attack.attackName == moveName);
-
+        if (currentAttack.chargeAttack)
+        {
+            SetAnimation(currentAttack.chargeAnimation.name); 
+            chargeAttack = true;
+            StartCoroutine(ChargeHeavyAttack());
+            // perform charge logic here 
+        }
+        else
+        {
+            StartCoroutine(PerformAttack(currentAttack, colliders));
+        }
+        
+        if (ctx.canceled && currentAttack.chargeAttack)
+        {
+            StartCoroutine(PerformChargeAttack(currentAttack, 5f,colliders));
+        }
+        
+        /*
         if (currentAttack != null)
         {
             StartCoroutine(PerformAttack(currentAttack, colliders));
@@ -469,84 +477,30 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         else
         {
             Debug.LogWarning($"No attack data found for {moveName}");
-        }
+        }*/
 
         print(moveName);
 
     }
 
-    private bool CanAttack()
+    private IEnumerator ChargeHeavyAttack(AttackData a)
     {
-        if (movementState == MovementState.Grounded && combatState == CombatState.Neutral ||
-            movementState == MovementState.InAir && combatState == CombatState.Neutral)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private string GetAttackDirection(Vector2 inputDir)
-    {
-        if (inputDir.magnitude < deadZoneTreshold)
-        {
-            return "Neutral"; // No direction pressed
-        }
-
-        if (Mathf.Abs(inputDir.x) > Mathf.Abs(inputDir.y))
-        {
-            return inputDir.x > 0 ? "Right" : "Left";
-        }
-        else
-        {
-            return inputDir.y > 0 ? "Up" : "Down";
-        }
-    }
-
-    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders)
-    {
-        combatState = CombatState.Attacking;
-        
-        SetTriggerAnimation(attackData.animation.name);
-        print(attackData.animation.name);
-        
-        rb.velocity = Vector2.zero;
-        
-        if (attackData.unstoppable) // If the attack has the property unstoppable it won't get cancelled when hit
-        {
-            combatState = (CombatState)(byte)18; 
-        }
-        performingAttack = true;
-
-        yield return new WaitForSeconds(attackData.startupTime);
-
-        foreach (var collider in colliders)
-        {
-            collider.enabled = true;
-            DetectHits(collider, attackData);
-        }
-
-        yield return new WaitForSeconds(attackData.activeTime);
-
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            colliders[i].enabled = false;
-        }
-
-        yield return new WaitForSeconds(attackData.moveDuration);
-
-        combatState = CombatState.Neutral;
-        performingAttack = false;
+        float chargeDamage = Mathf.MoveTowards()
+        return null;
     }
     
-    // Should move is a blank variable, just so I can overide the other performAttack
-    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders, bool shouldMove) 
+    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
     {
         combatState = CombatState.Attacking;
         
         SetTriggerAnimation(attackData.animation.name);
-        Vector3 direction = attackData.movementDirection;
-        rb.AddForce(direction, ForceMode.Impulse);
+
+        if (attackData.moveOnAttack)
+        {
+               Vector3 direction = attackData.movementDirection;
+               rb.AddForce(direction, ForceMode.Impulse);
+        }
+     
         
         if (attackData.unstoppable) // If the attack has the property unstoppable it won't get cancelled when hit
         {
@@ -574,7 +528,44 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         combatState = CombatState.Neutral;
         performingAttack = false;
     }
+    private IEnumerator PerformChargeAttack(AttackData attackData, float chargedDamage ,Collider[] colliders) 
+    {
+        combatState = CombatState.Attacking;
+        
+        SetTriggerAnimation(attackData.animation.name);
 
+        if (attackData.moveOnAttack)
+        {
+             Vector3 direction = attackData.movementDirection;
+             rb.AddForce(direction, ForceMode.Impulse);
+        }
+        
+        if (attackData.unstoppable) // If the attack has the property unstoppable it won't get cancelled when hit
+        {
+            combatState = (CombatState)(byte)18; 
+        }
+        performingAttack = true;
+
+        yield return new WaitForSeconds(attackData.startupTime);
+
+        foreach (var collider in colliders)
+        {
+            collider.enabled = true;
+            DetectHits(collider, attackData);
+        }
+
+        yield return new WaitForSeconds(attackData.activeTime);
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            colliders[i].enabled = false;
+        }
+
+        yield return new WaitForSeconds(attackData.moveDuration);
+
+        combatState = CombatState.Neutral;
+        performingAttack = false;
+    }
     private void DetectHits(Collider attackCollider, AttackData attackData)
     {
         // Corrected size calculation to ensure full detection
@@ -647,6 +638,34 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         yield return new WaitForSeconds(attackData.hitStun);
 
         combatState = CombatState.Neutral;
+    }
+    
+    private bool CanAttack()
+    {
+        if (movementState == MovementState.Grounded && combatState == CombatState.Neutral ||
+            movementState == MovementState.InAir && combatState == CombatState.Neutral)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private string GetAttackDirection(Vector2 inputDir)
+    {
+        if (inputDir.magnitude < deadZoneTreshold)
+        {
+            return "Neutral"; // No direction pressed
+        }
+
+        if (Mathf.Abs(inputDir.x) > Mathf.Abs(inputDir.y))
+        {
+            return inputDir.x > 0 ? "Right" : "Left";
+        }
+        else
+        {
+            return inputDir.y > 0 ? "Up" : "Down";
+        }
     }
 
     public virtual void OnUltimateCast(InputAction.CallbackContext ctx)
@@ -753,10 +772,13 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     #region Animator
 
     private void AnimationStates() // Sets animation bools based on state
-    { 
+    {
+        if (chargeAttack) return;
+     
         switch (combatState)
         {
             case CombatState.Blocking:
+                
                 
                 break;
             case CombatState.HitStun:

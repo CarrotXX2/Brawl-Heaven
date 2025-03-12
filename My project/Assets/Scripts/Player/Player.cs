@@ -44,7 +44,6 @@ public class Player : MonoBehaviour
         {
             OnCharacterSelectStart();
         }
-        
     }
     void OnEnable()
     {
@@ -137,7 +136,7 @@ public class Player : MonoBehaviour
         InputState.Change(virtualMouse.position, cursorPosition);
     }
     
-    public void ClickUIElement()
+    private void ClickUIElement()
     {
         PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
         {

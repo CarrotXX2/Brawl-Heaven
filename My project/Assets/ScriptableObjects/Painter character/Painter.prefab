@@ -1975,7 +1975,7 @@ MonoBehaviour:
   totalDamageTaken: 0
   stocks: 3
   moveInput: {x: 0, y: 0}
-  movementSpeed: 5
+  movementSpeed: 4.5
   sprintMultiplier: 1.7
   gravityForce: 20
   jumpForce: 10
@@ -2050,8 +2050,8 @@ MonoBehaviour:
   touchedDeathZone: 0
   cameraFollowWeight: 0
   cameraFollowRadius: 0
-  groundedDrag: 0
-  inAirDrag: 0
+  groundedDrag: 1
+  inAirDrag: 1.5
   ultimateDuration: 0
   cursor: {fileID: 621779072663708013, guid: e923f85ed6aa80649b15d4c451d1e454, type: 3}
   cursorInstance: {fileID: 0}

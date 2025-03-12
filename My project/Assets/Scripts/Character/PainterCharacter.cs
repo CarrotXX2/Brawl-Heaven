@@ -25,7 +25,7 @@ public class PainterCharacter : PlayerController
     
     private List<Vector3> drawnPoints = new List<Vector3>();
     
-    [Header("")]
+    [Space]
     private bool usingUltimate = false;
     
     protected override void Update()
@@ -231,7 +231,7 @@ public class PainterCharacter : PlayerController
 
 private void GenerateCompoundColliders(GameObject parent, Vector3[] vertices, int[] triangles)
 {
-    const int maxTrianglesPerCollider = 20; // Adjust this number based on your needs
+    int maxTrianglesPerCollider = 1; // Adjust this number based on your needs
     
     // Group triangles into chunks for separate colliders
     for (int startIdx = 0; startIdx < triangles.Length; startIdx += maxTrianglesPerCollider * 3)
