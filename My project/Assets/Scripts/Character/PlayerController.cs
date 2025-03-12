@@ -96,7 +96,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private List<AttackData> attackData = new List<AttackData>();
 
     private bool performingAttack; // Bool to keep track if the coroutine is ongoing or not
-    private bool chargeAttack = false; // Bool to check if 
+    private bool isCharging; // Bool to check if 
     [Header("Blocking Logic")] [SerializeField]
     private float totalBlockingTime;
 
@@ -440,53 +440,45 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public void OnHeavytAttack(InputAction.CallbackContext ctx)
     {
-        if (!ctx.started || !CanPerformAction() || !CanAttack()) return;
-        
         string direction = GetAttackDirection(moveInput);
         string moveName = $"{movementState.ToString()} {direction}";
-
+        float chargeStartTime = 0f;
+        
         if (!heavyHitboxes.TryGetValue(moveName, out Collider[] colliders))
         {
             Debug.LogWarning($"{moveName} does not exist");
             return;
         }
-        
+    
         AttackData currentAttack = attackData.Find(attack => attack.attackName == moveName);
-        if (currentAttack.chargeAttack)
+    
+        // Start charging when button is pressed
+        if (ctx.started && CanPerformAction() && CanAttack())
         {
-            SetAnimation(currentAttack.chargeAnimation.name); 
-            chargeAttack = true;
-            StartCoroutine(ChargeHeavyAttack());
-            // perform charge logic here 
+            if (currentAttack.chargeAttack)
+            {
+                chargeStartTime = Time.time;
+            }
+            else
+            {
+                StartCoroutine(PerformAttack(currentAttack, colliders));
+            }
         }
-        else
+        // Release charge when button is released
+        else if (ctx.canceled && isCharging)
         {
-            StartCoroutine(PerformAttack(currentAttack, colliders));
-        }
+            StopAllCoroutines(); // Stop the charging coroutine
+            float chargeDuration = Mathf.Clamp(Time.time - chargeStartTime, 0, currentAttack.maxChargeTime);
+            float chargeRatio = chargeDuration / currentAttack.maxChargeTime;
+            
+            float chargeDamage = Mathf.Lerp(currentAttack.minChargeDamage, currentAttack.maxChargeDamage, chargeRatio);
         
-        if (ctx.canceled && currentAttack.chargeAttack)
-        {
-            StartCoroutine(PerformChargeAttack(currentAttack, 5f,colliders));
-        }
+            StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
         
-        /*
-        if (currentAttack != null)
-        {
-            StartCoroutine(PerformAttack(currentAttack, colliders));
+            isCharging = false;
         }
-        else
-        {
-            Debug.LogWarning($"No attack data found for {moveName}");
-        }*/
 
         print(moveName);
-
-    }
-
-    private IEnumerator ChargeHeavyAttack(AttackData a)
-    {
-        float chargeDamage = Mathf.MoveTowards()
-        return null;
     }
     
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
@@ -773,7 +765,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void AnimationStates() // Sets animation bools based on state
     {
-        if (chargeAttack) return;
+        if (isCharging) return;
      
         switch (combatState)
         {

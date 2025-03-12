@@ -16,6 +16,7 @@ public class AttackData : ScriptableObject
     public bool chargeAttack;
     public float minChargeDamage;
     public float maxChargeDamage;
+    public float maxChargeTime;
     
     public float knockback;
     public Vector2 hitDirection; // Direction of the knockback, value should be between 0 and 1
