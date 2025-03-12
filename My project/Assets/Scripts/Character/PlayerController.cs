@@ -78,20 +78,16 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [SerializeField] private float minLaunchForce;
 
-    [Header("Attack Logic")] [SerializeField]
-    private LayerMask player;
-
-    [SerializeField]
-    private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); // List of hitboxes for light attacks
-
-    [SerializeField]
-    private List<HitBoxes> heavyHitboxList = new List<HitBoxes>(); // List of hitboxes for heavy attakcs
-
-    private Dictionary<string, Collider[]>
-        lightHitboxes = new Dictionary<string, Collider[]>(); // Dictionary to easily call the light hitboxes
-
-    private Dictionary<string, Collider[]>
-        heavyHitboxes = new Dictionary<string, Collider[]>(); // Dictionary to easily call the heavy hitboxes
+    [Header("Attack Logic")] 
+    [SerializeField] private LayerMask player;
+    
+    // List of hitboxes for light attacks 
+    [SerializeField] private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); 
+    [SerializeField] private List<HitBoxes> heavyHitboxList = new List<HitBoxes>(); 
+    
+    // Dictionary for all character attacks
+    private Dictionary<string, Collider[]> lightHitboxes = new Dictionary<string, Collider[]>(); 
+    private Dictionary<string, Collider[]> heavyHitboxes = new Dictionary<string, Collider[]>(); 
 
     [SerializeField] private List<AttackData> attackData = new List<AttackData>();
 
@@ -457,7 +453,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             if (currentAttack.chargeAttack)
             {
-                chargeStartTime = Time.time;
+               // StartCoroutine(ChargeHeavyAttack(currentAttack));
             }
             else
             {
@@ -480,6 +476,61 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         print(moveName);
     }
+    
+   /*private IEnumerator ChargeHeavyAttack(AttackData attackData)
+    {
+        // Set charging state
+        isCharging = true;
+        chargeStartTime = Time.time;
+    
+        // Play charge animation
+        SetAnimation(attackData.chargeAnimation.name);
+    
+        // Visual/Audio feedback during charging
+        float elapsedChargeTime = 0f;
+    
+        // Optional charge particles
+        GameObject chargeEffect = null;
+        if (attackData.chargeEffect != null)
+        {
+            chargeEffect = Instantiate(attackData.chargeEffect, transform.position, Quaternion.identity);
+            chargeEffect.transform.parent = transform;
+        }
+    
+        // Create a charging loop
+        while (isCharging && elapsedChargeTime < maxChargeTime)
+        {
+            elapsedChargeTime = Time.time - chargeStartTime;
+        
+            // Calculate current charge level (0 to 1)
+            float chargeRatio = Mathf.Clamp01(elapsedChargeTime / maxChargeTime);
+        
+            // Optional: scaling effect or vibration based on charge
+            if (chargeEffect != null)
+            {
+                chargeEffect.transform.localScale = Vector3.one * (1 + chargeRatio);
+            }
+        
+            // Optional: increasing sound pitch or visual indicator
+        
+            yield return null; // Wait for next frame
+        }
+    
+        // If we exit the loop because max charge time was reached
+        if (elapsedChargeTime >= maxChargeTime)
+        {
+            // Auto-release at max charge
+            float chargeDamage = maxChargeDamage;
+            StartCoroutine(PerformChargeAttack(attackData, chargeDamage, currentChargeColliders));
+            isCharging = false;
+        }
+    
+        // Clean up any charge effects if necessary
+        if (chargeEffect != null)
+        {
+            Destroy(chargeEffect);
+        }
+    }*/
     
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
     {
@@ -558,6 +609,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         combatState = CombatState.Neutral;
         performingAttack = false;
     }
+    
     private void DetectHits(Collider attackCollider, AttackData attackData)
     {
         // Corrected size calculation to ensure full detection

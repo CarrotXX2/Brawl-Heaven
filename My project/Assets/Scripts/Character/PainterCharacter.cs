@@ -201,7 +201,12 @@ public class PainterCharacter : PlayerController
     Mesh mesh = new Mesh();
     mesh.vertices = vertices.ToArray();
     mesh.triangles = triangles.ToArray();
+    
+    // Generate UVs for the mesh
+    GenerateUVs(mesh);
+    
     mesh.RecalculateNormals();
+    mesh.RecalculateTangents(); // Important for normal mapping
 
     // Create a new GameObject to hold the mesh
     GameObject newMeshObject = new GameObject("GeneratedMesh");
@@ -227,6 +232,46 @@ public class PainterCharacter : PlayerController
     
     // Generate compound colliders
     GenerateCompoundColliders(newMeshObject, vertices.ToArray(), triangles.ToArray());
+}
+
+private void GenerateUVs(Mesh mesh)
+{
+    Vector3[] vertices = mesh.vertices;
+    Vector2[] uvs = new Vector2[vertices.Length];
+    
+    // Find bounds of the mesh
+    Bounds bounds = CalculateBounds(vertices);
+    float width = bounds.size.x;
+    float height = bounds.size.y;
+    
+    // Simple planar mapping for 2D shapes
+    for (int i = 0; i < vertices.Length; i++)
+    {
+        // Normalize vertex coordinates to 0-1 range based on bounds
+        float u = (vertices[i].x - bounds.min.x) / width;
+        float v = (vertices[i].y - bounds.min.y) / height;
+        
+        uvs[i] = new Vector2(u, v);
+    }
+    
+    mesh.uv = uvs;
+}
+
+private Bounds CalculateBounds(Vector3[] vertices)
+{
+    if (vertices.Length == 0)
+        return new Bounds(Vector3.zero, Vector3.zero);
+    
+    Vector3 min = vertices[0];
+    Vector3 max = vertices[0];
+    
+    for (int i = 1; i < vertices.Length; i++)
+    {
+        min = Vector3.Min(min, vertices[i]);
+        max = Vector3.Max(max, vertices[i]);
+    }
+    
+    return new Bounds((min + max) * 0.5f, max - min);
 }
 
 private void GenerateCompoundColliders(GameObject parent, Vector3[] vertices, int[] triangles)
