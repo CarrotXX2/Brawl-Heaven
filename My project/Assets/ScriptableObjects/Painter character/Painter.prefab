@@ -2000,37 +2000,52 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   lightHitboxList:
-  - attackName: Grounded Neutral
+  - attackName: Light Grounded Neutral
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: Grounded Left
+  - attackName: Light Grounded Left
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: Grounded Right
+  - attackName: Light Grounded Right
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: Grounded Up
+  - attackName: Light Grounded Up
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: Grounded Down
+  - attackName: Light Grounded Down
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: InAir Neutral
+  - attackName: Light InAir Neutral
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: InAir Left
+  - attackName: Light InAir Left
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: InAir Right
+  - attackName: Light InAir Right
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: InAir Up
+  - attackName: Light InAir Up
     collider:
     - {fileID: 7395061679694579562}
-  - attackName: InAir Down
+  - attackName: Light InAir Down
     collider:
     - {fileID: 7395061679694579562}
-  heavyHitboxList: []
+  heavyHitboxList:
+  - attackName: Heavy Grounded Neutral
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy Grounded Left
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy Grounded Right
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy Grounded Down
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy Grounded Up
+    collider:
+    - {fileID: 7395061679694579562}
   attackData:
   - {fileID: 11400000, guid: 002f858ede19fa348b027d343a7019cd, type: 2}
   - {fileID: 11400000, guid: 57de355084efab54989f09d773128db3, type: 2}
@@ -2042,6 +2057,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a598df46b2b603846a319de09f841efb, type: 2}
   - {fileID: 11400000, guid: 7ba2cbfd908e6204fb2f32d3ca65a693, type: 2}
   - {fileID: 11400000, guid: d620f1717a36d3248a35705094521e8b, type: 2}
+  - {fileID: 11400000, guid: d859cedf019929b4e8fd3653f2215f7a, type: 2}
+  - {fileID: 11400000, guid: bb68a22f3ce64ee49a5fc3a8c18a5fb7, type: 2}
+  - {fileID: 11400000, guid: 5e0e25ecfae713b439d5308f90160100, type: 2}
+  - {fileID: 11400000, guid: 4b29d66091c52d347acbd39dd70cc5d4, type: 2}
+  - {fileID: 11400000, guid: 20924df611b083944afc0b3250bd4c3e, type: 2}
   totalBlockingTime: 4
   currentBlockingTime: 4
   blockRechargeTime: 1

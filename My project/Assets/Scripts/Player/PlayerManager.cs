@@ -29,18 +29,7 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
-        if (drawings.Count < 0) return;
         
-        foreach (var player in players)
-        {
-            foreach (var meshCollider in drawings)
-            {
-               /* if (GetDistanceToColliderEdge(player.gameObject, meshCollider) < 0.1f)
-                {
-                    print("player is in collider");
-                }*/
-            }
-        }
     }
 
     public void AddPlayer(GameObject player)

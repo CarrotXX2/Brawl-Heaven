@@ -5,4 +5,5 @@ using UnityEngine;
 public interface IDamageable
 {
     public void TakeDamage(AttackData attackData, Transform enemyTransform);
+    public void TakeDamage(AttackData attackData,float chargedDamage ,Transform enemyTransform);
 }

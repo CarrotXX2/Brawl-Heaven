@@ -71,7 +71,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("LedgeGrab Check")]
     [SerializeField] private LayerMask ledgeLayer;
-    [SerializeField] private Transform lineCastTransform;
+    [SerializeField] protected Transform lineCastTransform;
     
     [Header("Launch Logic")] [SerializeField]
     private int weight; // Weight determines the players knockback, heavier weight less knockback
@@ -91,22 +91,24 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [SerializeField] private List<AttackData> attackData = new List<AttackData>();
 
+    private AttackData currentAttack;
+    private Collider[] colliders;
+    private float chargeStartTime; // Used to track how long the player is charging
     private bool performingAttack; // Bool to keep track if the coroutine is ongoing or not
     private bool isCharging; // Bool to check if 
-    [Header("Blocking Logic")] [SerializeField]
-    private float totalBlockingTime;
+    
+    [Header("Blocking Logic")] 
+    [SerializeField] private float totalBlockingTime;
 
     [SerializeField] private float currentBlockingTime;
     [SerializeField] private float blockRechargeTime;
-
-    [SerializeField]
-    private float
-        shieldReductionFactor; // Factor used for calculating the time that needs to be reduced when hit by an attack
+    
+    // Factor used for calculating the time that needs to be reduced when hit by an attack
+    [SerializeField] private float shieldReductionFactor; 
 
     [Header("Respawn Logic")]
-    private bool
-        invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
-    // ^^ implement this
+    private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
+    // TODO ^^ implement this
 
     [SerializeField] private float respawnTime;
     public bool touchedDeathZone;
@@ -411,7 +413,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if (!ctx.started || !CanPerformAction() || !CanAttack()) return;
         
         string direction = GetAttackDirection(moveInput);
-        string moveName = $"{movementState.ToString()} {direction}";
+        string moveName = $"Light {movementState.ToString()} {direction}";
 
         if (!lightHitboxes.TryGetValue(moveName, out Collider[] colliders))
         {
@@ -436,101 +438,92 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public void OnHeavytAttack(InputAction.CallbackContext ctx)
     {
-        string direction = GetAttackDirection(moveInput);
-        string moveName = $"{movementState.ToString()} {direction}";
-        float chargeStartTime = 0f;
-        
-        if (!heavyHitboxes.TryGetValue(moveName, out Collider[] colliders))
-        {
-            Debug.LogWarning($"{moveName} does not exist");
-            return;
-        }
-    
-        AttackData currentAttack = attackData.Find(attack => attack.attackName == moveName);
-    
         // Start charging when button is pressed
         if (ctx.started && CanPerformAction() && CanAttack())
         {
-            if (currentAttack.chargeAttack)
+            string direction = GetAttackDirection(moveInput);
+            string moveName = $"Heavy {movementState.ToString()} {direction}";
+            float chargeStartTime = 0f;
+            
+           
+            chargeStartTime = Time.time;
+            
+            
+            if (!heavyHitboxes.TryGetValue(moveName, out Collider[] collidersFound))
             {
-               // StartCoroutine(ChargeHeavyAttack(currentAttack));
+                Debug.LogWarning($"{moveName} does not exist");
+                return;
+            }
+            
+            colliders = collidersFound;
+            currentAttack = attackData.Find(attack => attack.attackName == moveName);
+            
+            if (!currentAttack.chargeAttack)
+            {
+                StartCoroutine(PerformAttack(currentAttack, colliders));
+                return;
             }
             else
             {
-                StartCoroutine(PerformAttack(currentAttack, colliders));
+                isCharging = true;
+                SetAnimation(currentAttack.chargeAnimation.name);
+                print($"Play animation {currentAttack.chargeAnimation.name}");
             }
         }
-        // Release charge when button is released
-        else if (ctx.canceled && isCharging)
+        else if (ctx.canceled && isCharging) // Release charge when button is released
         {
-            StopAllCoroutines(); // Stop the charging coroutine
             float chargeDuration = Mathf.Clamp(Time.time - chargeStartTime, 0, currentAttack.maxChargeTime);
             float chargeRatio = chargeDuration / currentAttack.maxChargeTime;
             
             float chargeDamage = Mathf.Lerp(currentAttack.minChargeDamage, currentAttack.maxChargeDamage, chargeRatio);
         
             StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
-        
-            isCharging = false;
         }
-
-        print(moveName);
     }
     
-   /*private IEnumerator ChargeHeavyAttack(AttackData attackData)
+   /*private IEnumerator ChargeHeavyAttack(AttackData attackData, Collider[] colliders)
     {
         // Set charging state
-        isCharging = true;
-        chargeStartTime = Time.time;
+        
     
         // Play charge animation
-        SetAnimation(attackData.chargeAnimation.name);
-    
-        // Visual/Audio feedback during charging
+            Visual/Audio feedback during charging
         float elapsedChargeTime = 0f;
-    
-        // Optional charge particles
+        
+        /*
         GameObject chargeEffect = null;
         if (attackData.chargeEffect != null)
         {
             chargeEffect = Instantiate(attackData.chargeEffect, transform.position, Quaternion.identity);
             chargeEffect.transform.parent = transform;
-        }
+        }*/
     
         // Create a charging loop
-        while (isCharging && elapsedChargeTime < maxChargeTime)
+       /* while (isCharging && elapsedChargeTime < attackData.maxChargeTime)
         {
             elapsedChargeTime = Time.time - chargeStartTime;
         
             // Calculate current charge level (0 to 1)
-            float chargeRatio = Mathf.Clamp01(elapsedChargeTime / maxChargeTime);
-        
-            // Optional: scaling effect or vibration based on charge
-            if (chargeEffect != null)
-            {
-                chargeEffect.transform.localScale = Vector3.one * (1 + chargeRatio);
-            }
-        
-            // Optional: increasing sound pitch or visual indicator
+            float chargeRatio = Mathf.Clamp01(elapsedChargeTime / attackData.maxChargeTime);
         
             yield return null; // Wait for next frame
         }
     
         // If we exit the loop because max charge time was reached
-        if (elapsedChargeTime >= maxChargeTime)
+        if (elapsedChargeTime >= attackData.maxChargeTime)
         {
             // Auto-release at max charge
-            float chargeDamage = maxChargeDamage;
-            StartCoroutine(PerformChargeAttack(attackData, chargeDamage, currentChargeColliders));
+            float chargeDamage = attackData.maxChargeDamage;
+            StartCoroutine(PerformChargeAttack(attackData, chargeDamage, colliders));
             isCharging = false;
-        }
+        }*/
     
-        // Clean up any charge effects if necessary
+        /* // Clean up any charge effects if necessary
         if (chargeEffect != null)
         {
             Destroy(chargeEffect);
-        }
-    }*/
+        }*/
+    //}
     
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
     {
@@ -556,7 +549,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         foreach (var collider in colliders)
         {
             collider.enabled = true;
-            DetectHits(collider, attackData);
+            DetectHits(attackData, collider);
         }
 
         yield return new WaitForSeconds(attackData.activeTime);
@@ -577,6 +570,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         
         SetTriggerAnimation(attackData.animation.name);
 
+        isCharging = false;
         if (attackData.moveOnAttack)
         {
              Vector3 direction = attackData.movementDirection;
@@ -594,7 +588,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         foreach (var collider in colliders)
         {
             collider.enabled = true;
-            DetectHits(collider, attackData);
+            DetectChargedHits(attackData, chargedDamage ,collider);
         }
 
         yield return new WaitForSeconds(attackData.activeTime);
@@ -610,7 +604,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         performingAttack = false;
     }
     
-    private void DetectHits(Collider attackCollider, AttackData attackData)
+    private void DetectHits(AttackData attackData, Collider attackCollider)
     {
         // Corrected size calculation to ensure full detection
         Vector3 boxSize = attackCollider.bounds.size; 
@@ -635,7 +629,32 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             }
         }
     }
+    
+    private void DetectChargedHits(AttackData attackData, float damage, Collider attackCollider)
+    {
+        // Corrected size calculation to ensure full detection
+        Vector3 boxSize = attackCollider.bounds.size; 
 
+        Collider[] hitObjects = Physics.OverlapBox(
+            attackCollider.bounds.center,
+            boxSize,
+            attackCollider.transform.rotation,
+            player
+        );
+
+        foreach (var hit in hitObjects)
+        {
+            IDamageable damageable = hit.GetComponent<IDamageable>();
+            
+            // Ignore self
+            if (hit.gameObject == gameObject) continue;
+            
+            if (damageable != null)
+            {
+                damageable.TakeDamage(attackData, damage ,transform);
+            }
+        }
+    }
 
     public void TakeDamage(AttackData attackData, Transform enemyTransform)
     {
@@ -644,6 +663,24 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             default:
                 totalDamageTaken += attackData.damage;
                 print($"Took {attackData.damage} damage");
+
+                TakeKB(attackData, enemyTransform); // Apply's a knockback if the move has knockback property's
+                StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
+
+                break;
+            case CombatState.Blocking:
+                currentBlockingTime -= attackData.damage * shieldReductionFactor;
+
+                break;
+        }
+    }
+    public void TakeDamage(AttackData attackData,float chargedDamage ,Transform enemyTransform)
+    {
+        switch (combatState)
+        {
+            default:
+                totalDamageTaken += chargedDamage;
+                print($"Took {chargedDamage} damage");
 
                 TakeKB(attackData, enemyTransform); // Apply's a knockback if the move has knockback property's
                 StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
@@ -676,7 +713,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             StopCoroutine(PerformAttack(null, null));
         }
-
+        SetTriggerAnimation("GettingHit");
         yield return null;
 
         yield return new WaitForSeconds(attackData.hitStun);
@@ -822,7 +859,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         switch (combatState)
         {
             case CombatState.Blocking:
-                
                 
                 break;
             case CombatState.HitStun:
