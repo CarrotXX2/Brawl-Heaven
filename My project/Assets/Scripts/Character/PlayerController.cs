@@ -27,15 +27,17 @@ public enum CombatState : byte
 
 public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 {
+    #region Variables
+    
     public MovementState movementState = MovementState.Grounded;
     public CombatState combatState = CombatState.Neutral;
 
     [Header("Player in game Stats")] 
     [SerializeField] private float totalDamageTaken;
-
     [SerializeField] private int stocks;
-
-    [Header("Movement Stats")]
+    
+    
+    [Header("Player Core")]
     [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
 
     [SerializeField] private float movementSpeed; // Base movementspeed
@@ -46,7 +48,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float jumpForce; // Jump strength
     [SerializeField] private int maxJumps; // Total jumps player can have in total
     [SerializeField] private int jumpsLeft; // Amount of jumps left
-
+    
+    public Transform playerTransform;
     [Header("Dash Stats")] [SerializeField]
     private float dashForce; // Dash Strength
 
@@ -55,9 +58,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [Header("Sprint logic")] [SerializeField]
     private float doubleTapThreshold; // Time window you have for multi tapping and to start sprinting
-
+    
     [SerializeField]
-    private float deadZoneTreshold; // The value that moveInput needs to be to count as a movement input
+    protected float deadZoneThreshold; // The value that moveInput needs to be to count as a movement input
 
     [SerializeField] private float lastTapTime; // Stores the time of the last movement input to detect double taps
     private bool isSprinting;
@@ -71,7 +74,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("LedgeGrab Check")]
     [SerializeField] private LayerMask ledgeLayer;
-    [SerializeField] protected Transform lineCastTransform;
+   
     
     [Header("Launch Logic")] [SerializeField]
     private int weight; // Weight determines the players knockback, heavier weight less knockback
@@ -93,7 +96,11 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private AttackData currentAttack;
     private Collider[] colliders;
-    private float chargeStartTime; // Used to track how long the player is charging
+    
+    [SerializeField] private float chargeStartTime; // Used to track how long the player is charging
+    [SerializeField] private float chargeRatio;
+    [SerializeField] private float chargeDamage;
+    
     private bool performingAttack; // Bool to keep track if the coroutine is ongoing or not
     private bool isCharging; // Bool to check if 
     
@@ -131,7 +138,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Animator Reference")]
     protected Animator animator;
     
-
+    [Header("Other Inputs")]
+    [SerializeField] protected Vector2 rightStickInput;
+    
+    #endregion
+    
+    #region Unity Methods
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -163,6 +175,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         IsGrounded();
         LedgeGrab();
         Blocking();
+    
+        if(isCharging) ChargeLogic();
         
         AnimationStates(); // Manages the animations
     }
@@ -177,6 +191,17 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         }
    
     }
+    #endregion
+
+    #region Manager Setups
+
+    public void GameStartSetup()
+    {
+        GameplayManager.Instance.players.Add(gameObject);
+        GameplayManager.Instance.playersAlive.Add(gameObject);
+    }
+
+    #endregion
 
     #region Movement
 
@@ -199,7 +224,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 velocity.x = moveInput.x * (isSprinting ? movementSpeed * sprintMultiplier : movementSpeed);
                 rb.velocity = velocity;
 
-                if (Mathf.Abs(moveInput.x) > deadZoneTreshold)
+                if (Mathf.Abs(moveInput.x) > deadZoneThreshold)
                 {
                     transform.rotation = Quaternion.LookRotation(new Vector3(moveInput.x, 0, 0));
                 }
@@ -228,7 +253,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         moveInput = ctx.ReadValue<Vector2>(); // Get X-axis input
 
         //print("moveInput: " + moveInput.x);
-        bool isMovingNow = Mathf.Abs(moveInput.x) > deadZoneTreshold; // Consider movement if input is significant
+        bool isMovingNow = Mathf.Abs(moveInput.x) > deadZoneThreshold; // Consider movement if input is significant
 
         if (isMovingNow && !wasMovingLastFrame) // Detect "new" movement input
         {
@@ -321,8 +346,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void TryLedgeGrab(Vector3 direction)
     {
         // Make a begin and end position for the linecast based on players height 
-        Vector3 lineDownStart = lineCastTransform.position + Vector3.up * 1.2f + direction;
-        Vector3 lineDownEnd = lineCastTransform.position + Vector3.up * 1f + direction;
+        Vector3 lineDownStart = playerTransform.position + Vector3.up * 1.2f + direction;
+        Vector3 lineDownEnd = playerTransform.position + Vector3.up * 1f + direction;
 
         Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
 
@@ -381,7 +406,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         if ((movementState & MovementState.Dashing) != 0) return true;
 
-        bool grounded = Physics.Raycast(lineCastTransform.position, Vector3.down, groundCheckDistance, groundCheckLayer);
+        bool grounded = Physics.Raycast(playerTransform.position, Vector3.down, groundCheckDistance, groundCheckLayer);
         
         if (grounded)
         {
@@ -442,10 +467,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if (ctx.started && CanPerformAction() && CanAttack())
         {
             string direction = GetAttackDirection(moveInput);
-            string moveName = $"Heavy {movementState.ToString()} {direction}";
-            float chargeStartTime = 0f;
+            string moveName = $"Heavy {movementState.ToString()} {direction}"; 
             
-           
+            chargeStartTime = 0f;
             chargeStartTime = Time.time;
             
             
@@ -473,57 +497,33 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         else if (ctx.canceled && isCharging) // Release charge when button is released
         {
             float chargeDuration = Mathf.Clamp(Time.time - chargeStartTime, 0, currentAttack.maxChargeTime);
-            float chargeRatio = chargeDuration / currentAttack.maxChargeTime;
             
-            float chargeDamage = Mathf.Lerp(currentAttack.minChargeDamage, currentAttack.maxChargeDamage, chargeRatio);
         
-            StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
+            ReleaseCharge(chargeDamage);
+        }
+    }
+
+    private void ChargeLogic()
+    {
+        float chargeDuration = Mathf.Clamp(Time.time - chargeStartTime, 0, currentAttack.maxChargeTime);
+        chargeRatio = chargeDuration / currentAttack.maxChargeTime;
+            
+        chargeDamage = Mathf.Lerp(currentAttack.minChargeDamage, currentAttack.maxChargeDamage, chargeRatio);
+
+        if (chargeRatio >= 1)
+        {
+            ReleaseCharge(chargeDamage);
         }
     }
     
-   /*private IEnumerator ChargeHeavyAttack(AttackData attackData, Collider[] colliders)
+    private void ReleaseCharge(float chargeDamage)
     {
-        // Set charging state
-        
-    
-        // Play charge animation
-            Visual/Audio feedback during charging
-        float elapsedChargeTime = 0f;
-        
-        /*
-        GameObject chargeEffect = null;
-        if (attackData.chargeEffect != null)
-        {
-            chargeEffect = Instantiate(attackData.chargeEffect, transform.position, Quaternion.identity);
-            chargeEffect.transform.parent = transform;
-        }*/
-    
-        // Create a charging loop
-       /* while (isCharging && elapsedChargeTime < attackData.maxChargeTime)
-        {
-            elapsedChargeTime = Time.time - chargeStartTime;
-        
-            // Calculate current charge level (0 to 1)
-            float chargeRatio = Mathf.Clamp01(elapsedChargeTime / attackData.maxChargeTime);
-        
-            yield return null; // Wait for next frame
-        }
-    
-        // If we exit the loop because max charge time was reached
-        if (elapsedChargeTime >= attackData.maxChargeTime)
-        {
-            // Auto-release at max charge
-            float chargeDamage = attackData.maxChargeDamage;
-            StartCoroutine(PerformChargeAttack(attackData, chargeDamage, colliders));
-            isCharging = false;
-        }*/
-    
-        /* // Clean up any charge effects if necessary
-        if (chargeEffect != null)
-        {
-            Destroy(chargeEffect);
-        }*/
-    //}
+        print("Charge released");
+        StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
+
+        chargeRatio = 0;
+        chargeDamage = 0;
+    }
     
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
     {
@@ -536,7 +536,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                Vector3 direction = attackData.movementDirection;
                rb.AddForce(direction, ForceMode.Impulse);
         }
-     
         
         if (attackData.unstoppable) // If the attack has the property unstoppable it won't get cancelled when hit
         {
@@ -734,7 +733,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private string GetAttackDirection(Vector2 inputDir)
     {
-        if (inputDir.magnitude < deadZoneTreshold)
+        if (inputDir.magnitude < deadZoneThreshold)
         {
             return "Neutral"; // No direction pressed
         }
@@ -819,6 +818,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             touchedDeathZone = true;
             OnStockLost();
         }
+
+        if (other.CompareTag("Drawing"))
+        {
+            print("Colliding with drawing");
+            // other.GetComponent<DrawingClass>();
+        }
     }
     private void OnStockLost()
     {
@@ -838,6 +843,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void Respawn()
     {
+        totalDamageTaken = 0;
         StartCoroutine(GameplayManager.Instance.RespawnPlayer(gameObject));
     }
 
@@ -847,6 +853,15 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     }
     #endregion
 
+
+    #endregion
+
+    #region Other Inputs
+
+    public virtual void OnRightAnalogStickMove(InputAction.CallbackContext ctx)
+    {
+        rightStickInput = ctx.ReadValue<Vector2>();
+    }
 
     #endregion
 
@@ -879,7 +894,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 {
                     SetAnimation("Sprinting");
                 }
-                else if (Mathf.Abs(moveInput.x) > deadZoneTreshold)
+                else if (Mathf.Abs(moveInput.x) > deadZoneThreshold)
                 {
                    SetAnimation("Walking");
                 }
@@ -937,11 +952,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         isTriggerActive = false;
     }
     #endregion
-    
+
+    #region UI Logic
     private void ChangeUI()
     {
        
     }
+    #endregion
+   
 
     [Serializable]
     public struct HitBoxes

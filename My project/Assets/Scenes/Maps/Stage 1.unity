@@ -908,6 +908,8 @@ MonoBehaviour:
   - {fileID: 1860614308}
   - {fileID: 208134030}
   playerWinPanel: {fileID: 0}
+  drawings: []
+  distanceThreshold: 0.25
 --- !u!1 &1673869338
 GameObject:
   m_ObjectHideFlags: 0

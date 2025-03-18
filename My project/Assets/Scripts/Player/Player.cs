@@ -61,12 +61,8 @@ public class Player : MonoBehaviour
 
         if (gameplayManager != null)
         {
-            gameplayManager.players.Add(gameObject);
-            
-            gameplayManager.playersAlive.Add(gameObject);
+            gameObject.GetComponentInChildren<PlayerController>(true).GameStartSetup();
         }
-        
-        gameObject.SetActive(false);
     }
     #region Character Selection
 
@@ -219,6 +215,12 @@ public class Player : MonoBehaviour
     {
         if (!CanPerformCharacterActions()) return;
         playerController.OnUltimateCast(ctx);
+    }
+
+    public void OnRightAnalogStickMove(InputAction.CallbackContext ctx)
+    {
+        if (!CanPerformCharacterActions()) return;
+        playerController.OnRightAnalogStickMove(ctx);
     }
 
     private bool CanPerformCharacterActions()

@@ -19,6 +19,10 @@ public class GameplayManager : MonoBehaviour
     [Header("UI Panels")]
     [SerializeField] private GameObject playerWinPanel;
     
+    [Header("Drawing management")]
+    public List<PolygonCollider2D> drawings = new List<PolygonCollider2D>(); // Keeps track of every current drawing/ultimate on the field
+    [SerializeField] private float distanceThreshold;
+    
     private void Awake()
     {
         Instance = this;
@@ -27,7 +31,19 @@ public class GameplayManager : MonoBehaviour
     private void Start()
     {
        Invoke("SpawnPlayers", 3);
-    }    
+    }
+
+    private void Update()
+    {
+        foreach (var drawing in drawings)
+        {
+            foreach (var player in players)
+            {
+                
+            }
+        }
+    }
+    
     public void SpawnPlayers()
     {
         for (int i = 0; i < players.Count; i++)
@@ -59,6 +75,16 @@ public class GameplayManager : MonoBehaviour
             PlayerWin(playersAlive[0]);
         }
     }
+    public void AddDrawing(PolygonCollider2D collider)
+    {
+        drawings.Add(collider);
+    }
+
+    public void RemoveDrawing(PolygonCollider2D collider)
+    {
+        drawings.Remove(collider);
+    }
+
 
     private void PlayerWin(GameObject player)
     {
