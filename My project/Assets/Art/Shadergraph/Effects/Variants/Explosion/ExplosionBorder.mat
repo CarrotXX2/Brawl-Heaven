@@ -7,10 +7,10 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Gridd Variant 1
-  m_Shader: {fileID: -6465566751694194690, guid: 42540d8dd86c59746b8358b48b707fd9,
+  m_Name: ExplosionBorder
+  m_Shader: {fileID: -6465566751694194690, guid: afa6bc4af47519746b22c15af2bfbfea,
     type: 3}
-  m_Parent: {fileID: -876546973899608171, guid: 42540d8dd86c59746b8358b48b707fd9,
+  m_Parent: {fileID: -876546973899608171, guid: afa6bc4af47519746b22c15af2bfbfea,
     type: 3}
   m_ModifiedSerializedProperties: 2
   m_ValidKeywords: []
@@ -24,26 +24,17 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs:
-    - _Texture2D:
-        m_Texture: {fileID: 2800000, guid: 4f68dda020b348a4bbd6e5f0e82f7d79, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BackgroundTransparancy: 0.95
-    - _Emission: 9.02
+    - _BACKGROUND: 0
     - _QueueControl: 0
-    - _Rotate: -1.7
-    - _Size: 1
-    - _Speed: 0.11
     - _Transparancy: 0.5
     m_Colors:
-    - _Background: {r: 0.011764714, g: 0.8784314, b: 0.13924846, a: 0}
-    - _Color: {r: 0.30875704, g: 1, b: 0.09019607, a: 0}
-    - _Color2: {r: 3.2830188, g: 1.3269199, b: 0.015485975, a: 0}
+    - _Color: {r: 0.6037736, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 3.9245284, g: 0.12958355, b: 0.12958355, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &5494676136483006809
+--- !u!114 &4413139509024743892
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

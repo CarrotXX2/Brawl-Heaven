@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
   m_Name: DrawingProperties 3
   m_EditorClassIdentifier: 
-  name: TEst
+  name: SmokeScreen
   lifeTime: 0
   distanceThreshold: 0
   outlineWidth: 1.2

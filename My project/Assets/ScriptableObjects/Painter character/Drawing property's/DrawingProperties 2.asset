@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
   m_Name: DrawingProperties 2
   m_EditorClassIdentifier: 
-  name: TEst
+  name: Heal
   lifeTime: 0
-  distanceThreshold: 0
-  outlineWidth: 1.2
-  mainMaterial: {fileID: 2100000, guid: ff7300e1e39d84b4fa6d02b388d40b34, type: 2}
-  backGroundMaterial: {fileID: 2100000, guid: 89917eeee8c25424d92a4f894ca1f93d, type: 2}
+  distanceThreshold: 0.16
+  outlineWidth: 1.1
+  mainMaterial: {fileID: 2100000, guid: 3dd4c20228c0a0e4db8992c862b3d3ce, type: 2}
+  backGroundMaterial: {fileID: 2100000, guid: 1c71752704aa88b4081b1149055c1f28, type: 2}

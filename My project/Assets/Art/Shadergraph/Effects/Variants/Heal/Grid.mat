@@ -7,18 +7,18 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Gridd Variant
+  m_Name: Grid
   m_Shader: {fileID: -6465566751694194690, guid: 42540d8dd86c59746b8358b48b707fd9,
     type: 3}
   m_Parent: {fileID: -876546973899608171, guid: 42540d8dd86c59746b8358b48b707fd9,
     type: 3}
-  m_ModifiedSerializedProperties: 0
+  m_ModifiedSerializedProperties: 18
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3015
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -31,8 +31,23 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaClipping: 0.3
+    - _BackgroundTransparancy: 11.19
+    - _Emission: 5
+    - _Float: 4.52
     - _QueueControl: 0
-    m_Colors: []
+    - _QueueOffset: 15
+    - _Rotate: -1.7
+    - _Size: 1
+    - _Speed: 0.11
+    - _Transparancy: 0
+    m_Colors:
+    - _Background: {r: 0.011764714, g: 0.8784314, b: 0.13924843, a: 0}
+    - _Color: {r: 0.14801559, g: 0.6132076, b: 0, a: 0}
+    - _Color2: {r: 3.2830188, g: 1.3269199, b: 0.015485975, a: 0}
+    - _ColorBackground: {r: 1, g: 1, b: 1, a: 0}
+    - _GridColor: {r: 0.35357833, g: 1, b: 0, a: 0}
+    - _Tiling: {r: 3, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &5494676136483006809
 MonoBehaviour:

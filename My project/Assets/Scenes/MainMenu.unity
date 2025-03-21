@@ -6889,6 +6889,9 @@ MonoBehaviour:
     type: 3}
   offset: {x: 0, y: 0}
   targetTag: Selected
+  animationSpeed: 2
+  scaleFactor: 0.8
+  selectedObjectText: {fileID: 6132282356696881103}
 --- !u!114 &2286408203311680639
 MonoBehaviour:
   m_ObjectHideFlags: 0

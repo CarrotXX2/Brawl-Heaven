@@ -12,11 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
   m_Name: DrawingProperties
   m_EditorClassIdentifier: 
-  name: TEst
-  lifeTime: 0
+  name: Blackhole
+  lifeTime: 5
   distanceThreshold: 0
-  outlineWidth: 1.2
-  mainMaterial: {fileID: -876546973899608171, guid: 9a73a5f50253da14296ee35aaa436d84,
-    type: 3}
-  backGroundMaterial: {fileID: -876546973899608171, guid: d0320d20869d77e4bbf73fdff25b4fb9,
-    type: 3}
+  outlineWidth: 1.1
+  mainMaterial: {fileID: 2100000, guid: d843542714e27ff43a82fda9af3600c7, type: 2}
+  backGroundMaterial: {fileID: 2100000, guid: 7d282bc5642564d49b1611dac07be9da, type: 2}

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
   m_Name: DrawingProperties 1
   m_EditorClassIdentifier: 
-  name: TEst
-  lifeTime: 0
+  name: Explosion
+  lifeTime: 3
   distanceThreshold: 0
-  outlineWidth: 1.2
-  mainMaterial: {fileID: 2100000, guid: de8d1f9aa0586d544b78da5d5d6712ec, type: 2}
-  backGroundMaterial: {fileID: 2100000, guid: a7bdf66d028db5f46948567c5bcca284, type: 2}
+  outlineWidth: 1.1
+  mainMaterial: {fileID: 2100000, guid: cdf6d260f23c902428a91936ed545623, type: 2}
+  backGroundMaterial: {fileID: 2100000, guid: 0d963f824007d9d4c9a9ad933e2655cf, type: 2}
