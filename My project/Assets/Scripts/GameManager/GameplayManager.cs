@@ -27,21 +27,10 @@ public class GameplayManager : MonoBehaviour
     {
         Instance = this;
     }
-
+    
     private void Start()
     {
        Invoke("SpawnPlayers", 3);
-    }
-
-    private void Update()
-    {
-        foreach (var drawing in drawings)
-        {
-            foreach (var player in players)
-            {
-                
-            }
-        }
     }
     
     public void SpawnPlayers()
@@ -56,6 +45,7 @@ public class GameplayManager : MonoBehaviour
     }
     public IEnumerator RespawnPlayer(GameObject player)
     {
+        print("Respawn Player");
         // do some cool stuff 
         yield return new WaitForSeconds(respawnTime);
         

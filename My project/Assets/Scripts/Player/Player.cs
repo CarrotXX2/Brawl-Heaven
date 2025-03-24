@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
@@ -12,7 +13,8 @@ public class Player : MonoBehaviour
 {
     [Header("Player Info")]
     public int playerID;
-
+    private PlayerInput playerInput;
+    
     [Header("Character Info")]
     public GameObject characterPrefab; // Selected character
     private PlayerController playerController; // Handles character input
@@ -34,6 +36,8 @@ public class Player : MonoBehaviour
     {
         PlayerManager.Instance.AddPlayer(gameObject);
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        
+        playerInput = GetComponent<PlayerInput>(); // Get the PlayerInput component
         
         DontDestroyOnLoad(gameObject);
     }
@@ -76,12 +80,24 @@ public class Player : MonoBehaviour
         if (cursorInstance != null) return; // Prevent duplicates
 
         virtualMouse = (Mouse)InputSystem.AddDevice("VirtualMouse");
-        InputUser.PerformPairingWithDevice(virtualMouse); // Ensure UI recognizes it
-
-        gamepad = Gamepad.current; // Assign current gamepad to this player
+    
+        // Create a new InputUser and pair it with both the gamepad and virtual mouse
+        InputUser user = InputUser.PerformPairingWithDevice(virtualMouse);
+    
+        // Get the specific gamepad that's controlling this player
+        gamepad = playerInput.devices.FirstOrDefault(d => d is Gamepad) as Gamepad;
+    
+        if (gamepad == null)
+        {
+            Debug.LogError("No gamepad found for this player!");
+            return;
+        }
+    
+        // Pair the same user with the gamepad
+        InputUser.PerformPairingWithDevice(gamepad, user);
 
         cursorInstance = Instantiate(cursorPrefab, canvas.transform);
-        cursorPosition = new Vector2(Screen.width / 2, Screen.height / 2); // Set initial position
+        cursorPosition = new Vector2(Screen.width / 2, Screen.height / 2);
         cursorInstance.position = cursorPosition;
     }
 
@@ -107,29 +123,34 @@ public class Player : MonoBehaviour
         playerController = playerCharacter.GetComponent<PlayerController>();
     }
 
-    private void Update() // TODO: can control multiple cursors at once in some cases fix ;3
+    private void Update()
     {
         if (cursorInstance == null || virtualMouse == null || gamepad == null) return;
 
         // Read input from left stick
         Vector2 moveInput = gamepad.leftStick.ReadValue();
-        cursorPosition += moveInput * cursorSpeed * Time.deltaTime;
+    
+        // Only update if there's actual movement
+        if (moveInput.sqrMagnitude > 0.01f)
+        {
+            cursorPosition += moveInput * cursorSpeed * Time.deltaTime;
 
-        // Clamp cursor position to stay within screen bounds
-        cursorPosition.x = Mathf.Clamp(cursorPosition.x, 0, Screen.width);
-        cursorPosition.y = Mathf.Clamp(cursorPosition.y, 0, Screen.height);
+            // Clamp cursor position to stay within screen bounds
+            cursorPosition.x = Mathf.Clamp(cursorPosition.x, 0, Screen.width);
+            cursorPosition.y = Mathf.Clamp(cursorPosition.y, 0, Screen.height);
 
-        // Move the cursor in UI
-        cursorInstance.position = cursorPosition;
+            // Move the cursor in UI
+            cursorInstance.position = cursorPosition;
+
+            // Update virtual mouse position
+            InputState.Change(virtualMouse.position, cursorPosition);
+        }
 
         // Handle clicking
         if (gamepad.buttonSouth.wasPressedThisFrame)
         {
             ClickUIElement();
         }
-
-        // Update virtual mouse position
-        InputState.Change(virtualMouse.position, cursorPosition);
     }
     
     private void ClickUIElement()

@@ -23,11 +23,6 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-      
-    }
-
     public void AddPlayer(GameObject player)
     {
         player.GetComponent<Player>().playerID = players.Count;

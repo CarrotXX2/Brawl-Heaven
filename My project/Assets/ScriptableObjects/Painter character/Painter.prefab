@@ -1924,7 +1924,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -1986,7 +1986,7 @@ MonoBehaviour:
   dashForce: 20
   dashTime: 0.075
   doubleTapThreshold: 0.25
-  deadZoneThreshold: 0
+  deadZoneThreshold: 0.25
   lastTapTime: 0
   groundCheckLayer:
     serializedVersion: 2
@@ -1996,6 +1996,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   weight: 100
+  knockbackReduceSpeed: 0
+  knockbackDurationFactor: 0
   minLaunchForce: 1
   player:
     serializedVersion: 2
@@ -2047,6 +2049,21 @@ MonoBehaviour:
   - attackName: Heavy Grounded Up
     collider:
     - {fileID: 7395061679694579562}
+  - attackName: Heavy InAir Neutral
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy InAir Left
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy InAir Right
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy InAir Down
+    collider:
+    - {fileID: 7395061679694579562}
+  - attackName: Heavy InAir Up
+    collider:
+    - {fileID: 7395061679694579562}
   attackData:
   - {fileID: 11400000, guid: 002f858ede19fa348b027d343a7019cd, type: 2}
   - {fileID: 11400000, guid: 57de355084efab54989f09d773128db3, type: 2}
@@ -2063,6 +2080,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5e0e25ecfae713b439d5308f90160100, type: 2}
   - {fileID: 11400000, guid: 4b29d66091c52d347acbd39dd70cc5d4, type: 2}
   - {fileID: 11400000, guid: 20924df611b083944afc0b3250bd4c3e, type: 2}
+  - {fileID: 11400000, guid: 874050eeaa6a5b9458116a9b10bb5a6e, type: 2}
+  - {fileID: 11400000, guid: 801834e600143044e97891acf09612b4, type: 2}
+  - {fileID: 11400000, guid: 5d25bcb7eef16f64db3caac6eb98a2a6, type: 2}
+  - {fileID: 11400000, guid: 13f1e17d271ecaa4dbe36c937a11ce7c, type: 2}
+  - {fileID: 11400000, guid: 8de04260c52ddb44c9ee9bb6e47e6177, type: 2}
   chargeStartTime: 0
   chargeRatio: 0
   chargeDamage: 0
@@ -2076,19 +2098,19 @@ MonoBehaviour:
   cameraFollowRadius: 0
   groundedDrag: 1
   inAirDrag: 1.5
-  rightStickInput: {x: 0, y: 0}
   ultimateDuration: 5
   drawingProperties:
   - {fileID: 11400000, guid: 603661e25ccebc64f81f03e5694cde24, type: 2}
   - {fileID: 11400000, guid: f6679816f363a3a49b77e6f0228c6f07, type: 2}
   - {fileID: 11400000, guid: 87e08425be32a39439e822ac9ea0f2e3, type: 2}
   - {fileID: 11400000, guid: 7e57e73db0d3aec4d9f16481a003aa68, type: 2}
+  propertyIndex: 0
   cursor: {fileID: 621779072663708013, guid: e923f85ed6aa80649b15d4c451d1e454, type: 3}
   cursorInstance: {fileID: 0}
   cursorSpeed: 5
   defaultMaterial: {fileID: -876546973899608171, guid: 9a73a5f50253da14296ee35aaa436d84,
     type: 3}
-  minPointDistance: 0.25
+  minPointDistance: 0.15
   closeLoopThreshold: 1
 --- !u!1 &8782839604776821483 stripped
 GameObject:

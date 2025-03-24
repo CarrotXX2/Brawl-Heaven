@@ -10,24 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd707e9130b5c1446a46a3040c9b10fe, type: 3}
-  m_Name: Grounded Left
+  m_Name: Heavy InAir Up
   m_EditorClassIdentifier: 
-  attackName: Light Grounded Left
-  animation: {fileID: 2064051935452780071, guid: 8b825605a771d894c9b7ab866fdccc42,
+  attackName: Heavy InAir Up
+  animation: {fileID: -2481928794201147094, guid: 8b825605a771d894c9b7ab866fdccc42,
     type: 3}
-  chargeAnimation: {fileID: 0}
-  damage: 10
+  chargeAnimation: {fileID: 5591161427370346095, guid: 8b825605a771d894c9b7ab866fdccc42,
+    type: 3}
+  damage: 14
   chargeAttack: 0
   minChargeDamage: 0
   maxChargeDamage: 0
   maxChargeTime: 0
-  knockback: 59.22
-  hitDirection: {x: -0.75, y: 0.75}
-  moveDuration: 1
-  unstoppable: 1
-  hitStun: 0.2
-  startupTime: 0.2
-  activeTime: 0.5
-  moveOnAttack: 0
-  movementDirection: {x: 10, y: 0}
-  moveForce: 25
+  knockback: 0
+  hitDirection: {x: 0, y: 0}
+  moveDuration: 0
+  unstoppable: 0
+  hitStun: 0
+  startupTime: 0
+  activeTime: 0
+  moveOnAttack: 1
+  movementDirection: {x: 0, y: 10}
+  moveForce: 15

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Debug = UnityEngine.Debug;
@@ -35,7 +36,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Player in game Stats")] 
     [SerializeField] private float totalDamageTaken;
     [SerializeField] private int stocks;
-    
     
     [Header("Player Core")]
     [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
@@ -76,13 +76,23 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private LayerMask ledgeLayer;
    
     
-    [Header("Launch Logic")] [SerializeField]
-    private int weight; // Weight determines the players knockback, heavier weight less knockback
+    [Header("Launch Logic")] 
+    [SerializeField] private int weight; // Weight determines the players knockback, heavier weight less knockback
+    [SerializeField] private float knockbackReduceSpeed; // Controls how quickly knockback slows down
+    [SerializeField] private float knockbackDurationFactor;
 
-    [SerializeField] private float minLaunchForce;
+    
+    private float minKnockback;
+    private bool isBeingKnocked = false;
+    private float knockbackEndTime;
+    
+    private Vector2 knockbackDirection; // The ammount of force that should be applied on both axis from 0 to 1 
+    private Vector2 knockbackVelocity; 
+   
 
     [Header("Attack Logic")] 
     [SerializeField] private LayerMask player;
+    private Coroutine attackCoroutine; // Variable to hold the attack coroutine so it can be cancelled
     
     // List of hitboxes for light attacks 
     [SerializeField] private List<HitBoxes> lightHitboxList = new List<HitBoxes>(); 
@@ -138,9 +148,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Animator Reference")]
     protected Animator animator;
     
-    [Header("Other Inputs")]
-    [SerializeField] protected Vector2 rightStickInput;
-    
     #endregion
     
     #region Unity Methods
@@ -172,7 +179,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     protected virtual void Update()
     {
-        IsGrounded();
         LedgeGrab();
         Blocking();
     
@@ -185,11 +191,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void FixedUpdate() // Use FixedUpdate for physics
     {
         if (!rb.isKinematic)
-        { 
+        {    
+            IsGrounded();
             ApplyGravity();
+            UpdateKnockback();
             Move();
         }
-   
     }
     #endregion
 
@@ -215,7 +222,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void Move()
     {
-        if (!CanPerformAction()) return;
+        if (!CanPerformAction() || !CanMove()) return;
         
         switch (movementState)
         {
@@ -240,6 +247,16 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
                 break;
         }
+    }
+
+    private bool CanMove()
+    {
+        if (isCharging)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public void OnMove(InputAction.CallbackContext ctx)
@@ -298,7 +315,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 break;
             
             case MovementState.Launched:
-                
+                // Can't jump
                 break;
         }
     }
@@ -372,7 +389,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         // Calculate where to set the player position to ledgegrab
         Vector3 hangPosition = new Vector3(forwardHit.point.x, downHit.point.y, forwardHit.point.z);
-        Vector3 targetOffset = -direction * 0.1f + Vector3.up * -0.5f;
+        Vector3 targetOffset = -direction * 0.1f + Vector3.up * -0.8f;
 
         Vector3 lookDirection = (forwardHit.point - transform.position).normalized;
         lookDirection.y = 0; // Keep only horizontal rotation
@@ -384,6 +401,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         }
         
         transform.position = hangPosition + targetOffset;
+        
+        CancelAttack();
     }
     private bool HasState(MovementState state) => (movementState & state) != 0;
     private bool HasState(CombatState state) => (combatState & state) != 0;
@@ -431,7 +450,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     #region Combat Logic
 
-    #region Attacking And Hit logic
+    #region Attacking and Hit logic
 
     public void OnLightAttack(InputAction.CallbackContext ctx)
     {
@@ -450,7 +469,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         if (currentAttack != null)
         {
-            StartCoroutine(PerformAttack(currentAttack, colliders));
+            attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders));
         }
         else
         {
@@ -472,6 +491,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             chargeStartTime = 0f;
             chargeStartTime = Time.time;
             
+            rb.velocity = Vector3.zero;
             
             if (!heavyHitboxes.TryGetValue(moveName, out Collider[] collidersFound))
             {
@@ -484,7 +504,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             
             if (!currentAttack.chargeAttack)
             {
-                StartCoroutine(PerformAttack(currentAttack, colliders));
+                attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders));
                 return;
             }
             else
@@ -498,7 +518,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             float chargeDuration = Mathf.Clamp(Time.time - chargeStartTime, 0, currentAttack.maxChargeTime);
             
-        
             ReleaseCharge(chargeDamage);
         }
     }
@@ -519,10 +538,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void ReleaseCharge(float chargeDamage)
     {
         print("Charge released");
-        StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
+        attackCoroutine = StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
 
         chargeRatio = 0;
-        chargeDamage = 0;
     }
     
     private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
@@ -558,7 +576,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             colliders[i].enabled = false;
         }
 
-        yield return new WaitForSeconds(attackData.moveDuration);
+        yield return new WaitForSeconds(attackData.moveCooldown);
 
         combatState = CombatState.Neutral;
         performingAttack = false;
@@ -597,7 +615,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             colliders[i].enabled = false;
         }
 
-        yield return new WaitForSeconds(attackData.moveDuration);
+        yield return null;
+
+        yield return new WaitForSeconds(attackData.moveCooldown);
 
         combatState = CombatState.Neutral;
         performingAttack = false;
@@ -624,7 +644,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             
             if (damageable != null)
             {
-                damageable.TakeDamage(attackData, transform);
+                damageable.TakeDamage(attackData, transform, attackData.damage);
             }
         }
     }
@@ -633,12 +653,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         // Corrected size calculation to ensure full detection
         Vector3 boxSize = attackCollider.bounds.size; 
-
         Collider[] hitObjects = Physics.OverlapBox(
             attackCollider.bounds.center,
             boxSize,
-            attackCollider.transform.rotation,
-            player
+            attackCollider.transform.rotation, player
         );
 
         foreach (var hit in hitObjects)
@@ -655,17 +673,27 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         }
     }
 
-    public void TakeDamage(AttackData attackData, Transform enemyTransform)
+    private void CancelAttack() // Cancel attack when certain interactions are met
+    {
+        StopCoroutine(attackCoroutine);
+    }
+
+    public void TakeDamage([CanBeNull] AttackData attackData, [CanBeNull] Transform enemyTransform, float damage)
     {
         switch (combatState)
         {
             default:
-                totalDamageTaken += attackData.damage;
-                print($"Took {attackData.damage} damage");
-
-                TakeKB(attackData, enemyTransform); // Apply's a knockback if the move has knockback property's
-                StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
-
+                if (attackData)
+                {
+                    totalDamageTaken += damage;
+                    
+                    TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
+                    StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
+                }
+                else // Explosion damage
+                {
+                    totalDamageTaken += damage;
+                }
                 break;
             case CombatState.Blocking:
                 currentBlockingTime -= attackData.damage * shieldReductionFactor;
@@ -681,7 +709,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 totalDamageTaken += chargedDamage;
                 print($"Took {chargedDamage} damage");
 
-                TakeKB(attackData, enemyTransform); // Apply's a knockback if the move has knockback property's
+                TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
                 StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
 
                 break;
@@ -692,25 +720,70 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         }
     }
 
-    public void TakeKB(AttackData attackData, Transform kbSource)
+    public void Heal(int healAmount)
     {
-        if (attackData.knockback == 0) return;
-
-        float knockback = (((totalDamageTaken / 100) * attackData.knockback * (200 / (weight + 100)) + minLaunchForce));
-
-        // Get knockback direction (from attacker to target)
-        Vector3 hitDirection = (transform.position - kbSource.position).normalized;
-
-        Vector2 launchForce = attackData.hitDirection * knockback;
-        rb.AddForce(launchForce, ForceMode.Impulse);
+        totalDamageTaken -= healAmount;
     }
 
+    public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float kb)
+    {
+        if (attackData)
+        {
+            minKnockback = attackData.minKnockback;
+            knockbackDirection = attackData.hitDirection;
+        }
+        else
+        {
+            minKnockback = 0;
+            
+            // kb direction of the explosion
+            knockbackDirection = Vector2.one;
+        }
+        
+        // Calculate knockback intensity based on damage
+        float knockbackIntensity = (((totalDamageTaken / 100) * kb * (200 / (weight + 100)) + minKnockback));
+    
+        // Get base direction from attacker to target
+        Vector3 baseDirection = (transform.position - kbSource.position).normalized;
+    
+        // Combine base direction with the attack's specific direction
+        // Verticallity is controlled by attackdata only
+        Vector2 finalDirection = new Vector2(MathF.Sign(baseDirection.x) * Mathf.Abs(knockbackDirection.x), attackData.hitDirection.y).normalized;
+    
+        // Calculate and apply launch force
+        knockbackVelocity = finalDirection * knockbackIntensity;
+    
+        // Set knockback state
+        isBeingKnocked = true;
+        knockbackEndTime = Time.time + (knockbackIntensity * knockbackDurationFactor);
+    
+        // Apply initial impulse but with slightly reduced force for less sudden feel
+        rb.velocity = Vector2.zero;
+        rb.AddForce(knockbackVelocity * 0.8f, ForceMode.Impulse);
+    }
+    
+    private void UpdateKnockback()
+    {
+        if (isBeingKnocked)
+        {
+            if (Time.time >= knockbackEndTime)
+            {
+                isBeingKnocked = false;
+                return;
+            }
+        
+            // Apply continued knockback force, but gradually reduce it
+            knockbackVelocity *= knockbackReduceSpeed;
+            rb.velocity = knockbackVelocity;
+        }
+    }
+    
     private IEnumerator ApplyHitStun(AttackData attackData) // If hitstun is 0 the coroutine simply sets combatState to neutral and stops all ongoing attacks because you got hit
     {
         combatState = CombatState.HitStun;
         if (performingAttack && combatState != CombatState.Unstoppable)
         {
-            StopCoroutine(PerformAttack(null, null));
+            StopCoroutine(attackCoroutine);
         }
         SetTriggerAnimation("GettingHit");
         yield return null;
@@ -815,8 +888,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         if (other.CompareTag("Border"))
         {
-            touchedDeathZone = true;
-            OnStockLost();
+            if (!touchedDeathZone)
+            {
+                touchedDeathZone = true;
+                OnStockLost();
+            }
+            
         }
 
         if (other.CompareTag("Drawing"))
@@ -860,7 +937,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public virtual void OnRightAnalogStickMove(InputAction.CallbackContext ctx)
     {
-        rightStickInput = ctx.ReadValue<Vector2>();
+      
     }
 
     #endregion

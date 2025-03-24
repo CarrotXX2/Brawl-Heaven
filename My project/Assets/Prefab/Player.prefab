@@ -176,8 +176,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6441858401770141617}
         m_TargetAssemblyTypeName: Player, Assembly-CSharp
-        m_MethodName: 
-        m_Mode: 1
+        m_MethodName: OnRightAnalogStickMove
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

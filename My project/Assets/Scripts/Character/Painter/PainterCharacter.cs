@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,7 +13,7 @@ public class PainterCharacter : PlayerController
     private DrawingProperties[] drawingProperties;
 
     private int lastDirectionIndex;
-    private int propertyIndex;
+    [SerializeField] private int propertyIndex;
 
     [Header("Drawing Logic")] private List<GameObject> generatedObjects = new List<GameObject>();
 
@@ -26,6 +25,7 @@ public class PainterCharacter : PlayerController
     [SerializeField] private float minPointDistance;
     [SerializeField] private float closeLoopThreshold;
 
+    private Coroutine ultimateCast;
     private Vector3 cursorPosition;
     private Vector2 cursorMoveInput;
 
@@ -56,27 +56,52 @@ public class PainterCharacter : PlayerController
     {
         if (!ctx.started) return;
 
+        // If we're already using the ultimate and drawing, end the ultimate
+        if (usingUltimate && startDrawing)
+        {
+            StopCoroutine(ultimateCast);
+            UltimateEnd();
+            return;
+        }
+
+        // If we're in ultimate mode but not drawing yet, start drawing
+        if (usingUltimate && !startDrawing)
+        {
+            startDrawing = true;
+            ultimateCast = StartCoroutine(UltimateCoroutine());
+            return;
+        }
+
+        // If we're not in ultimate mode yet, start ultimate mode
         drawnPoints.Clear();
-        rb.isKinematic = true; // Player can't move or fall while drawing 
+        rb.isKinematic = true; // Player can't move or fall while drawing
 
         Debug.Log("Cast Ultimate");
 
-        cursorPosition = playerTransform.position;
-        cursorInstance = Instantiate(cursor, cursorPosition, quaternion.identity);
+        // Instantiate cursor at player position (including Z coordinate)
+        if (!cursorInstance)
+        {
+            cursorPosition = playerTransform.position;
+            cursorInstance = Instantiate(cursor, playerTransform.position, Quaternion.identity);
+        }
 
-        StartCoroutine(UltimateCoroutine());
+        usingUltimate = true;
     }
 
     private IEnumerator UltimateCoroutine()
     {
-        usingUltimate = true;
+        // Start drawing immediately
         startDrawing = true;
 
         yield return new WaitForSeconds(ultimateDuration);
 
+        UltimateEnd();
+    }
+
+    private void UltimateEnd()
+    {
         // Check if shape is closed and has enough points
-        if (drawnPoints.Count >= 3 &&
-            Vector3.Distance(drawnPoints[0], drawnPoints[drawnPoints.Count - 1]) < closeLoopThreshold)
+        if (drawnPoints.Count >= 3 && Vector3.Distance(drawnPoints[0], drawnPoints[drawnPoints.Count - 1]) < closeLoopThreshold)
         {
             // Close the loop by adding the first point again
             drawnPoints.Add(drawnPoints[0]);
@@ -90,6 +115,7 @@ public class PainterCharacter : PlayerController
         }
 
         Destroy(cursorInstance);
+        cursorInstance = null;
         rb.isKinematic = false;
         usingUltimate = false;
         startDrawing = false;
@@ -99,11 +125,9 @@ public class PainterCharacter : PlayerController
     {
         cursorMoveInput = moveInput;
 
+        // Update X and Y position, but preserve Z position
         cursorPosition.x += cursorMoveInput.x * cursorSpeed * Time.deltaTime;
         cursorPosition.y += cursorMoveInput.y * cursorSpeed * Time.deltaTime;
-
-        // Keep Z position constant since we're drawing in 2D
-        cursorPosition.z = 0;
 
         // Update cursor position
         if (cursorInstance != null)
@@ -210,65 +234,70 @@ public class PainterCharacter : PlayerController
         GameObject drawingBackground = new GameObject("Drawing Background");
 
         drawingBackground.transform.localScale *= drawingProperties[propertyIndex].outlineWidth;
-        
-       // drawingObject.transform.position = cursorPosition;
-        
+
         generatedObjects.Add(drawingObject);
         generatedObjects.Add(drawingBackground);
 
         // Convert to 2D points for triangulation (assume all points are on the same Z plane)
         Vector2[] points2D = drawnPoints.Select(p => new Vector2(p.x, p.y)).ToArray();
 
-        // Create PolygonCollider2D first
-        PolygonCollider2D polygonCollider = drawingObject.AddComponent<PolygonCollider2D>();
-
-        // Set the polygon collider path to match the drawn shape
-        polygonCollider.SetPath(0, points2D);
-
-        // Create mesh and triangulate it properly
-        Mesh mesh = new Mesh();
-
-        // Use the triangulator to generate triangles
-        // We set clockwise to true for proper camera-facing triangulation
-
+        // Use the triangulator to generate triangles - always use clockwise winding
         Triangulator triangulator = new Triangulator(points2D);
-        int[] triangles = triangulator.Triangulate(false); // Clockwise winding
+        int[] triangles = triangulator.Triangulate(true); // Force clockwise winding
 
         // Convert back to 3D vertices for the mesh
         Vector3[] vertices = new Vector3[points2D.Length];
         for (int i = 0; i < points2D.Length; i++)
         {
-            vertices[i] = new Vector3(points2D[i].x, points2D[i].y, 0);
+            // Preserve the original Z position from drawn points
+            vertices[i] = new Vector3(points2D[i].x, points2D[i].y, drawnPoints[i].z);
         }
 
-        // Set mesh data
-        mesh.vertices = vertices;
+        // Calculate the center of the vertices
+        Vector3 center = Vector3.zero;
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            center += vertices[i];
+        }
+
+        center /= vertices.Length;
+
+        // Offset all vertices by the center position to center the pivot
+        Vector3[] centeredVertices = new Vector3[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            centeredVertices[i] = vertices[i] - center;
+        }
+
+        // Create the mesh with centered vertices
+        Mesh mesh = new Mesh();
+        mesh.vertices = centeredVertices;
         mesh.triangles = triangles;
 
         // Generate proper UVs
         GenerateUVs(mesh);
-        
-        // Calculate the center of the mesh
-        Vector3 center = CalculateMeshCenter(mesh);
 
-        // Offset all vertices by the center position to center the pivot
-        Vector3[] centeredVertices = mesh.vertices;
-        for (int i = 0; i < centeredVertices.Length; i++)
+        // Force normals to be consistent (all facing the same direction)
+        Vector3[] normals = new Vector3[mesh.vertices.Length];
+        for (int i = 0; i < normals.Length; i++)
         {
-            centeredVertices[i] -= center;
+            normals[i] = Vector3.forward; // Use Vector3.back if your camera looks along positive Z
         }
 
-        // Apply the centered vertices back to the mesh
-        mesh.vertices = centeredVertices;
+        mesh.normals = normals;
 
-        // Move the game objects to the center position to maintain visual position
+        // Don't recalculate normals since we've set them manually
+        mesh.RecalculateBounds();
+
+        // Position the game objects at the center position
         drawingObject.transform.position = center;
         drawingBackground.transform.position = center;
-        // CENTER THE PIVOT POINT - END NEW CODE
 
-        // Recalculate mesh properties
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
+        // Move background a little bit to prevent mesh flickering
+        drawingBackground.transform.position = new Vector3(
+            drawingBackground.transform.position.x,
+            drawingBackground.transform.position.y,
+            drawingBackground.transform.position.z + 0.1f); // Add to Z, don't replace it
 
         // Add mesh components
         MeshFilter meshFilter = drawingObject.AddComponent<MeshFilter>();
@@ -280,31 +309,28 @@ public class PainterCharacter : PlayerController
         meshFilter.mesh = mesh;
         meshFilter2.mesh = mesh;
 
+        // Add collider 
+        PolygonCollider2D polygonCollider = drawingObject.AddComponent<PolygonCollider2D>();
+
+        // Create centered collider points
+        Vector2[] centeredColliderPoints = new Vector2[centeredVertices.Length];
+        for (int i = 0; i < centeredVertices.Length; i++)
+        {
+            centeredColliderPoints[i] = new Vector2(centeredVertices[i].x, centeredVertices[i].y);
+        }
+
+        // Set the centered collider path
+        polygonCollider.SetPath(0, centeredColliderPoints);
+
         // Add drawing property
         drawingObject.AddComponent<DrawnMesh>();
-        // TODO Use SO to give data to drawnmesh class
+        drawingObject.GetComponent<DrawnMesh>().drawingProperties = drawingProperties[propertyIndex];
 
         // Set material
         meshRenderer.material = drawingProperties[propertyIndex].mainMaterial;
         meshRenderer2.material = drawingProperties[propertyIndex].backGroundMaterial;
 
         Debug.Log($"Generated mesh with {vertices.Length} vertices and {triangles.Length / 3} triangles");
-    }
-
-    // 
-    private Vector3 CalculateMeshCenter(Mesh mesh)
-    {
-        Vector3 sum = Vector3.zero;
-        Vector3[] vertices = mesh.vertices;
-
-        // Sum all vertices
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            sum += vertices[i];
-        }
-
-        // Divide by vertex count to get average position (center)
-        return sum / vertices.Length;
     }
 
     private void GenerateUVs(Mesh mesh)
@@ -347,7 +373,6 @@ public class PainterCharacter : PlayerController
         return new Bounds((min + max) * 0.5f, max - min);
     }
 
-
     #endregion
 
     #region Triangulations
@@ -362,7 +387,7 @@ public class PainterCharacter : PlayerController
             m_points = new List<Vector2>(points);
         }
 
-        public int[] Triangulate(bool clockwise = false)
+        public int[] Triangulate(bool clockwise)
         {
             List<int> indices = new List<int>();
 
@@ -374,18 +399,18 @@ public class PainterCharacter : PlayerController
             // Create a list of indices
             List<int> remainingIndices = Enumerable.Range(0, n).ToList();
 
-            // Ensure the polygon is in the correct winding order
+            // Check the current winding order
             float area = CalculateArea();
             bool isClockwise = area < 0;
 
-            // Flip the winding order if necessary
+            // If the requested winding order is different from the current one, reverse the points
             if (clockwise != isClockwise)
             {
                 m_points.Reverse();
                 remainingIndices.Reverse();
             }
 
-            // Triangulate the polygon
+            // Triangulate the polygon using ear clipping algorithm
             while (remainingIndices.Count > 3)
             {
                 bool earFound = false;
@@ -407,19 +432,10 @@ public class PainterCharacter : PlayerController
                     // Check if this vertex is an ear
                     if (IsEar(prevIndex, currIndex, nextIndex, remainingIndices))
                     {
-                        // Add the ear triangle
-                        if (clockwise)
-                        {
-                            indices.Add(prevIndex);
-                            indices.Add(currIndex);
-                            indices.Add(nextIndex);
-                        }
-                        else
-                        {
-                            indices.Add(nextIndex);
-                            indices.Add(currIndex);
-                            indices.Add(prevIndex);
-                        }
+                        // Add the ear triangle with correct winding
+                        indices.Add(prevIndex);
+                        indices.Add(currIndex);
+                        indices.Add(nextIndex);
 
                         // Remove the ear tip
                         remainingIndices.RemoveAt(curr);
@@ -428,25 +444,18 @@ public class PainterCharacter : PlayerController
                     }
                 }
 
-                // If no ear is found, we may have a degenerate polygon
+                // If no ear is found, use a simple fan triangulation as fallback
                 if (!earFound)
                 {
-                    // Fall back to a simple triangulation method
-                    Debug.LogWarning("No ear found. Polygon may be degenerate. Using simple triangulation.");
+                    Debug.LogWarning("No ear found. Using simple fan triangulation.");
+                    indices.Clear();
+
+                    // Simple fan triangulation from the first vertex
                     for (int i = 1; i < n - 1; i++)
                     {
-                        if (clockwise)
-                        {
-                            indices.Add(0);
-                            indices.Add(i);
-                            indices.Add(i + 1);
-                        }
-                        else
-                        {
-                            indices.Add(0);
-                            indices.Add(i + 1);
-                            indices.Add(i);
-                        }
+                        indices.Add(0);
+                        indices.Add(i);
+                        indices.Add(i + 1);
                     }
 
                     break;
@@ -456,23 +465,15 @@ public class PainterCharacter : PlayerController
             // Add the final triangle
             if (remainingIndices.Count == 3)
             {
-                if (clockwise)
-                {
-                    indices.Add(remainingIndices[0]);
-                    indices.Add(remainingIndices[1]);
-                    indices.Add(remainingIndices[2]);
-                }
-                else
-                {
-                    indices.Add(remainingIndices[2]);
-                    indices.Add(remainingIndices[1]);
-                    indices.Add(remainingIndices[0]);
-                }
+                indices.Add(remainingIndices[0]);
+                indices.Add(remainingIndices[1]);
+                indices.Add(remainingIndices[2]);
             }
 
             return indices.ToArray();
         }
 
+        // The rest of your methods remain the same
         private float CalculateArea()
         {
             float area = 0f;
@@ -540,7 +541,5 @@ public class PainterCharacter : PlayerController
             return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
         }
     }
-
     #endregion
 }
-   
