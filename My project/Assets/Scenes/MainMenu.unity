@@ -5425,6 +5425,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4691673995151878181, guid: 7a9aeb2f65270524f95cbd03c688c5a5,
+        type: 3}
+      propertyPath: tips.Array.data[2]
+      value: This game is made for up to 4 players!
+      objectReference: {fileID: 0}
     - target: {fileID: 4733542629513877567, guid: 7a9aeb2f65270524f95cbd03c688c5a5,
         type: 3}
       propertyPath: m_Name

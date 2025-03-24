@@ -74,6 +74,11 @@ public class LoadingBar : MonoBehaviour
         if (stageGameObject != null)
         {
             string sceneName = stageGameObject.name;
+
+            foreach (var player in PlayerManager.Instance.players)
+            {
+                player.OnGameStart();
+            }
             SceneManager.LoadScene(sceneName);
         }
     }
