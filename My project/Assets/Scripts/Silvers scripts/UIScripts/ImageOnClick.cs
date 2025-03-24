@@ -34,7 +34,7 @@ public class ChangeImageOnClick : MonoBehaviour
         if (targetImage != null && map3Image != null)
         {
             targetImage.sprite = map3Image;
-            targetImage.gameObject.name = $"{prefix }3";
+            targetImage.gameObject.name = $"{prefix} 3";
         }
     }
     public void OnMap4ButtonClicked()
