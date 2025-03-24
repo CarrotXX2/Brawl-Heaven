@@ -468,7 +468,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Texture2DMaterialSlot",
     "m_ObjectId": "06f438a9005044cdbd203e8457aa6877",
     "m_Id": 0,
-    "m_DisplayName": "Texture2D",
+    "m_DisplayName": "texture bleh",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -2575,10 +2575,10 @@
     "m_Guid": {
         "m_GuidSerialized": "7160f43f-d386-48e5-a539-65f134805e9b"
     },
-    "m_Name": "Texture2D",
+    "m_Name": "texture bleh",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "Texture2D",
-    "m_DefaultReferenceName": "_Texture2D",
+    "m_RefNameGeneratedByDisplayName": "texture bleh",
+    "m_DefaultReferenceName": "_texture_bleh",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
