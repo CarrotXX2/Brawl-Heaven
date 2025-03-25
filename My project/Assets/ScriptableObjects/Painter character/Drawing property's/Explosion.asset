@@ -10,12 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
-  m_Name: DrawingProperties 3
+  m_Name: Explosion
   m_EditorClassIdentifier: 
-  name: SmokeScreen
-  lifeTime: 0
+  name: Explosion
+  property: 3
+  lifeTime: 3.1
   distanceThreshold: 0
-  outlineWidth: 1.2
-  mainMaterial: {fileID: -6922793697723135513, guid: 00d221f5e1a43a04599128b588616e75,
-    type: 3}
-  backGroundMaterial: {fileID: 2100000, guid: 9d0c34e0a9be5d14da44027cc0d6d30f, type: 2}
+  outlineWidth: 1.1
+  mainMaterial: {fileID: 2100000, guid: cdf6d260f23c902428a91936ed545623, type: 2}
+  backGroundMaterial: {fileID: 2100000, guid: 0d963f824007d9d4c9a9ad933e2655cf, type: 2}
+  healingAmount: 0
+  healingInterval: 0
+  pullForce: 0
+  damage: 35
+  knockBack: 50
+  explosionTimer: 3

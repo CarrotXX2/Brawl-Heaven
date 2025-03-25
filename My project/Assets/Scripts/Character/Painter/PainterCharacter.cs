@@ -14,6 +14,9 @@ public class PainterCharacter : PlayerController
 
     private int lastDirectionIndex;
     [SerializeField] private int propertyIndex;
+    
+    [Header("SmokeScreen Data")]
+    [SerializeField] private ParticleSystem smokeScreenParticle;
 
     [Header("Drawing Logic")] private List<GameObject> generatedObjects = new List<GameObject>();
 
@@ -297,7 +300,7 @@ public class PainterCharacter : PlayerController
         drawingBackground.transform.position = new Vector3(
             drawingBackground.transform.position.x,
             drawingBackground.transform.position.y,
-            drawingBackground.transform.position.z + 0.1f); // Add to Z, don't replace it
+            drawingBackground.transform.position.z + 0.1f);
 
         // Add mesh components
         MeshFilter meshFilter = drawingObject.AddComponent<MeshFilter>();
@@ -305,10 +308,13 @@ public class PainterCharacter : PlayerController
 
         MeshFilter meshFilter2 = drawingBackground.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer2 = drawingBackground.AddComponent<MeshRenderer>();
-
+        
         meshFilter.mesh = mesh;
         meshFilter2.mesh = mesh;
-
+        
+        // Add SmokeScreen particles system to gameObject
+        
+        
         // Add collider 
         PolygonCollider2D polygonCollider = drawingObject.AddComponent<PolygonCollider2D>();
 
@@ -325,7 +331,8 @@ public class PainterCharacter : PlayerController
         // Add drawing property
         drawingObject.AddComponent<DrawnMesh>();
         drawingObject.GetComponent<DrawnMesh>().drawingProperties = drawingProperties[propertyIndex];
-
+        drawingObject.GetComponent<DrawnMesh>().smokeParticleSystem = smokeScreenParticle;
+        
         // Set material
         meshRenderer.material = drawingProperties[propertyIndex].mainMaterial;
         meshRenderer2.material = drawingProperties[propertyIndex].backGroundMaterial;

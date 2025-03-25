@@ -1958,7 +1958,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 120
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &4046186433878050419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1976,7 +1976,7 @@ MonoBehaviour:
   totalDamageTaken: 0
   stocks: 3
   moveInput: {x: 0, y: 0}
-  movementSpeed: 4.5
+  movementSpeed: 3
   sprintMultiplier: 1.7
   gravityForce: 20
   jumpForce: 10
@@ -1996,9 +1996,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   weight: 100
-  knockbackReduceSpeed: 0
-  knockbackDurationFactor: 0
-  minLaunchForce: 1
+  knockbackReduceSpeed: 0.98
+  knockbackDurationFactor: 0.075
   player:
     serializedVersion: 2
     m_Bits: 64
@@ -2088,6 +2087,7 @@ MonoBehaviour:
   chargeStartTime: 0
   chargeRatio: 0
   chargeDamage: 0
+  attackType: 0000
   totalBlockingTime: 4
   currentBlockingTime: 4
   blockRechargeTime: 1
@@ -2105,6 +2105,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 87e08425be32a39439e822ac9ea0f2e3, type: 2}
   - {fileID: 11400000, guid: 7e57e73db0d3aec4d9f16481a003aa68, type: 2}
   propertyIndex: 0
+  smokeScreenParticle: {fileID: 5986030388903666032, guid: 32b5713dd094cc845a5cba620a8ebd2f,
+    type: 3}
   cursor: {fileID: 621779072663708013, guid: e923f85ed6aa80649b15d4c451d1e454, type: 3}
   cursorInstance: {fileID: 0}
   cursorSpeed: 5

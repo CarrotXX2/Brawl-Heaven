@@ -688,6 +688,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4063683199913896585, guid: 85807b9aefdb26d42bbf0ae720e84989,
         type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4063683199913896585, guid: 85807b9aefdb26d42bbf0ae720e84989,
+        type: 3}
       propertyPath: m_TagString
       value: Wall Jump
       objectReference: {fileID: 0}
@@ -695,6 +700,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513605041532619155, guid: 85807b9aefdb26d42bbf0ae720e84989,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5513605041532619155, guid: 85807b9aefdb26d42bbf0ae720e84989,
         type: 3}
@@ -713,8 +723,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7187144632839084915, guid: 85807b9aefdb26d42bbf0ae720e84989,
         type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7187144632839084915, guid: 85807b9aefdb26d42bbf0ae720e84989,
+        type: 3}
       propertyPath: m_TagString
       value: Wall Jump
+      objectReference: {fileID: 0}
+    - target: {fileID: 7499844259115151483, guid: 85807b9aefdb26d42bbf0ae720e84989,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8564216744929714600, guid: 85807b9aefdb26d42bbf0ae720e84989,
         type: 3}

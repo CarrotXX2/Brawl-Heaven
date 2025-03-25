@@ -19,16 +19,17 @@ MonoBehaviour:
     type: 3}
   damage: 0
   chargeAttack: 1
-  minChargeDamage: 5
-  maxChargeDamage: 18
+  minChargeDamage: 7
+  maxChargeDamage: 20
   maxChargeTime: 4
   knockback: 50
-  hitDirection: {x: 1, y: 0.2}
-  moveDuration: 0
+  minKnockback: 6
+  hitDirection: {x: 0.1, y: -1}
   unstoppable: 0
   hitStun: 0
   startupTime: 0.5
   activeTime: 1.2
+  moveCooldown: 0
   moveOnAttack: 0
   movementDirection: {x: 0, y: 0}
   moveForce: 0

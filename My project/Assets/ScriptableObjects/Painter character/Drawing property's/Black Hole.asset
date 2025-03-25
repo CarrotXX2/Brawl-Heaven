@@ -13,8 +13,15 @@ MonoBehaviour:
   m_Name: Black Hole
   m_EditorClassIdentifier: 
   name: Blackhole
-  lifeTime: 5
-  distanceThreshold: 0
+  property: 0
+  lifeTime: 3
+  distanceThreshold: 4
   outlineWidth: 1.1
   mainMaterial: {fileID: 2100000, guid: d843542714e27ff43a82fda9af3600c7, type: 2}
   backGroundMaterial: {fileID: 2100000, guid: 7d282bc5642564d49b1611dac07be9da, type: 2}
+  healingAmount: 0
+  healingInterval: 0
+  pullForce: 25
+  damage: 0
+  knockBack: 0
+  explosionTimer: 0

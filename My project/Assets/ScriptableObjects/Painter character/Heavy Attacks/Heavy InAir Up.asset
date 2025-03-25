@@ -22,13 +22,14 @@ MonoBehaviour:
   minChargeDamage: 0
   maxChargeDamage: 0
   maxChargeTime: 0
-  knockback: 0
-  hitDirection: {x: 0, y: 0}
-  moveDuration: 0
+  knockback: 25
+  minKnockback: 6
+  hitDirection: {x: 0, y: 1}
   unstoppable: 0
-  hitStun: 0
-  startupTime: 0
-  activeTime: 0
+  hitStun: 0.2
+  startupTime: 0.3
+  activeTime: 0.9
+  moveCooldown: 0
   moveOnAttack: 1
   movementDirection: {x: 0, y: 10}
-  moveForce: 15
+  moveForce: 20

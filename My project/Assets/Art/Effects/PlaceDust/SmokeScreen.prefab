@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5986030388903666032}
   - component: {fileID: 816772420585380022}
   m_Layer: 0
-  m_Name: PlaceDust 1
+  m_Name: SmokeScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -664,7 +664,7 @@ ParticleSystem:
   ShapeModule:
     serializedVersion: 6
     enabled: 1
-    type: 5
+    type: 13
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}

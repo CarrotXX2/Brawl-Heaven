@@ -112,6 +112,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float chargeDamage;
     
     private bool performingAttack; // Bool to keep track if the coroutine is ongoing or not
+    public bool[] attackType; // 0 is light attack 1 is heavy attack
     private bool isCharging; // Bool to check if 
     
     [Header("Blocking Logic")] 
@@ -222,8 +223,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void Move()
     {
-        if (!CanPerformAction() || !CanMove()) return;
-        
         switch (movementState)
         {
             default:
@@ -251,7 +250,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private bool CanMove()
     {
-        if (isCharging)
+        if (isCharging || attackType[1] || combatState == CombatState.Blocking || combatState == CombatState.HitStun)
         {
             return false;
         }
@@ -261,7 +260,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public void OnMove(InputAction.CallbackContext ctx)
     {
-        if (!CanPerformAction())
+        if (!CanMove())
         {
             moveInput = Vector2.zero; 
             return;
@@ -293,6 +292,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
+        if (!CanPerformAction()) return;
         switch (movementState)
         {
             default:
@@ -469,7 +469,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         if (currentAttack != null)
         {
-            attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders));
+            attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders, 0));
         }
         else
         {
@@ -504,7 +504,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             
             if (!currentAttack.chargeAttack)
             {
-                attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders));
+                attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders, 1));
                 return;
             }
             else
@@ -538,15 +538,15 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void ReleaseCharge(float chargeDamage)
     {
         print("Charge released");
-        attackCoroutine = StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders));
+        attackCoroutine = StartCoroutine(PerformChargeAttack(currentAttack, chargeDamage, colliders, 1));
 
         chargeRatio = 0;
     }
-    
-    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders) 
+
+    private IEnumerator PerformAttack(AttackData attackData, Collider[] colliders, int attackTypeIndex) 
     {
         combatState = CombatState.Attacking;
-        
+        attackType[attackTypeIndex] = true;
         SetTriggerAnimation(attackData.animation.name);
 
         if (attackData.moveOnAttack)
@@ -579,12 +579,13 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         yield return new WaitForSeconds(attackData.moveCooldown);
 
         combatState = CombatState.Neutral;
+        attackType[attackTypeIndex] = false;
         performingAttack = false;
     }
-    private IEnumerator PerformChargeAttack(AttackData attackData, float chargedDamage ,Collider[] colliders) 
+    private IEnumerator PerformChargeAttack(AttackData attackData, float chargedDamage ,Collider[] colliders, int attackTypeIndex) 
     {
         combatState = CombatState.Attacking;
-        
+        attackType[attackTypeIndex] = true;
         SetTriggerAnimation(attackData.animation.name);
 
         isCharging = false;
@@ -621,6 +622,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         combatState = CombatState.Neutral;
         performingAttack = false;
+        attackType[attackTypeIndex] = false;
     }
     
     private void DetectHits(AttackData attackData, Collider attackCollider)
@@ -675,6 +677,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void CancelAttack() // Cancel attack when certain interactions are met
     {
+        attackType[0] = false;
+        attackType[1] = false;
+        
         StopCoroutine(attackCoroutine);
     }
 
@@ -735,33 +740,40 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         else
         {
             minKnockback = 0;
-            
-            // kb direction of the explosion
             knockbackDirection = Vector2.one;
         }
-        
+    
         // Calculate knockback intensity based on damage
         float knockbackIntensity = (((totalDamageTaken / 100) * kb * (200 / (weight + 100)) + minKnockback));
     
         // Get base direction from attacker to target
         Vector3 baseDirection = (transform.position - kbSource.position).normalized;
-    
-        // Combine base direction with the attack's specific direction
-        // Verticallity is controlled by attackdata only
-        Vector2 finalDirection = new Vector2(MathF.Sign(baseDirection.x) * Mathf.Abs(knockbackDirection.x), attackData.hitDirection.y).normalized;
+   
+        // Use the attack's hit direction directly
+        Vector2 finalDirection = new Vector2(
+            Mathf.Sign(baseDirection.x) * knockbackDirection.x, 
+            knockbackDirection.y
+        );
     
         // Calculate and apply launch force
         knockbackVelocity = finalDirection * knockbackIntensity;
     
+        // Debug prints to verify calculations
+        Debug.Log($"Base Direction: {baseDirection}");
+        Debug.Log($"Hit Direction: {knockbackDirection}");
+        Debug.Log($"Final Direction: {finalDirection}");
+        Debug.Log($"Knockback Velocity: {knockbackVelocity}");
+
         // Set knockback state
+        movementState = MovementState.Launched;
         isBeingKnocked = true;
         knockbackEndTime = Time.time + (knockbackIntensity * knockbackDurationFactor);
     
-        // Apply initial impulse but with slightly reduced force for less sudden feel
+        // Apply initial impulse
         rb.velocity = Vector2.zero;
-        rb.AddForce(knockbackVelocity * 0.8f, ForceMode.Impulse);
+        rb.AddForce(knockbackVelocity, ForceMode.Impulse);
     }
-    
+
     private void UpdateKnockback()
     {
         if (isBeingKnocked)
@@ -769,30 +781,32 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             if (Time.time >= knockbackEndTime)
             {
                 isBeingKnocked = false;
+                movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
                 return;
             }
-        
-            // Apply continued knockback force, but gradually reduce it
+    
+            // Gradually reduce knockback
             knockbackVelocity *= knockbackReduceSpeed;
-            rb.velocity = knockbackVelocity;
+            rb.AddForce(knockbackVelocity, ForceMode.Force);
         }
     }
-    
-    private IEnumerator ApplyHitStun(AttackData attackData) // If hitstun is 0 the coroutine simply sets combatState to neutral and stops all ongoing attacks because you got hit
+
+    private IEnumerator ApplyHitStun(AttackData attackData)
     {
         combatState = CombatState.HitStun;
+        movementState = MovementState.Launched; // Ensure consistent state
+
         if (performingAttack && combatState != CombatState.Unstoppable)
         {
             StopCoroutine(attackCoroutine);
         }
         SetTriggerAnimation("GettingHit");
-        yield return null;
 
         yield return new WaitForSeconds(attackData.hitStun);
 
         combatState = CombatState.Neutral;
+        movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
     }
-    
     private bool CanAttack()
     {
         if (movementState == MovementState.Grounded && combatState == CombatState.Neutral ||
@@ -921,6 +935,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void Respawn()
     {
         totalDamageTaken = 0;
+        rb.velocity = Vector2.zero;
         StartCoroutine(GameplayManager.Instance.RespawnPlayer(gameObject));
     }
 

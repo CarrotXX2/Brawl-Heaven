@@ -15,8 +15,9 @@ public class DrawnMesh : MonoBehaviour
     public Property property;
     
     [Header("SmokeScreen Logic")]
-    private ParticleSystem smokeParticleSystem;
-    
+    public ParticleSystem smokeParticleSystem;
+
+    private bool smokeActivated;
     [Header("Healing Logic")]
     private float healingTimer;
 
@@ -24,6 +25,7 @@ public class DrawnMesh : MonoBehaviour
     private float explosionTimer;
     void Start()
     {
+        Destroy(gameObject, drawingProperties.lifeTime);
         players = GameplayManager.Instance.playersAlive;
         
         GetComponent<MeshRenderer>().material = drawingProperties.mainMaterial;
@@ -41,7 +43,16 @@ public class DrawnMesh : MonoBehaviour
         {
             case Property.SmokeScreen:
             {
-                // need some logic to make the particle emmit in the shape of the drawing 
+                if (!smokeActivated)
+                {
+                     ParticleSystem.ShapeModule shape = smokeParticleSystem.shape;
+                     shape.shapeType = ParticleSystemShapeType.Mesh;
+                     shape.mesh = gameObject.GetComponent<MeshFilter>().mesh; // Set the mesh dynamically
+                     ParticleSystem smokeParticle = Instantiate(smokeParticleSystem, transform);
+                     smokeParticle.Play();
+                     
+                     smokeActivated = true;
+                }
             }
                 break;
             case Property.Blacklhole: 
@@ -108,7 +119,7 @@ public class DrawnMesh : MonoBehaviour
 
             if (distance <= drawingProperties.distanceThreshold)
             {
-                if (IsPlayerInside(player))
+                if (!IsPlayerInside(player))
                 {
                     print("Player In range");
                     AddPlayer(player);
