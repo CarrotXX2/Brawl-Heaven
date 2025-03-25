@@ -7,14 +7,16 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Explosion Variant
-  m_Shader: {fileID: -6465566751694194690, guid: 730143960cd31174aab9fb69868e6c7c,
+  m_Name: HealBorder
+  m_Shader: {fileID: -6465566751694194690, guid: afa6bc4af47519746b22c15af2bfbfea,
     type: 3}
-  m_Parent: {fileID: -876546973899608171, guid: 730143960cd31174aab9fb69868e6c7c,
+  m_Parent: {fileID: -876546973899608171, guid: afa6bc4af47519746b22c15af2bfbfea,
     type: 3}
   m_ModifiedSerializedProperties: 18
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_ValidKeywords:
+  - _BACKGROUND
+  m_InvalidKeywords:
+  - _BOOLEAN
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -27,15 +29,21 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BackgroundOpacity: 0.09
-    - _Power: 0
+    - _BACKGROUND: 1
+    - _BOOLEAN: 1
     - _QueueControl: 0
     - _QueueOffset: 15
+    - _Speed: 1.71
+    - _Tiling: 1.88
+    - _Tiling_1: 5.65
+    - _Transparancy: 0.34
     m_Colors:
-    - _BackgroundColor: {r: 0.6415094, g: 0.17853329, b: 0.17853329, a: 0}
-    - _TimerColor: {r: 6.4150944, g: 1.2271699, b: 0, a: 0}
+    - _Color: {r: 0, g: 0, b: 0, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
+    - _ItemColor: {r: 95.87451, g: 95.87451, b: 95.87451, a: 0}
+    - _Tiling: {r: 6, g: 6, b: 0, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &5258721502289262890
+--- !u!114 &4413139509024743892
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
