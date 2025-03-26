@@ -7,10 +7,17 @@ public class SpotLightManager : MonoBehaviour
 
     void Start()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        for (int i = 0; i < players.Length; i++)
+        if (GameplayManager.Instance == null || GameplayManager.Instance.playersAlive == null)
         {
-            SpawnSpotlightForPlayer(players[i], spotlightPrefabs[i]);
+            return;
+        }
+
+        int spotlightIndex = 0;
+
+        foreach (var player in GameplayManager.Instance.playersAlive)
+        {
+            SpawnSpotlightForPlayer(player, spotlightPrefabs[spotlightIndex]);
+            spotlightIndex++;
         }
     }
 

@@ -1,114 +1,109 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class ShapeKeyAnimator : MonoBehaviour
 {
-    public SkinnedMeshRenderer skinnedMeshRenderer; // Referentie naar de SkinnedMeshRenderer
-    public float animationDuration = 2.0f; // Duur van de animatie van 0 naar 1
-    public float reverseAnimationDuration = 2.0f; // Duur van de animatie van 1 naar 0
-    public float delayBeforeReverse = 1.0f; // Wachtijd na animatie van 0 naar 1
-    public float delayAfterReverse = 1.0f; // Wachtijd na animatie van 1 naar 0
-    public Transform spawnPosition; // Positie waar de prefab gespawnd wordt
-    public Transform hidePosition; // Verberglocatie voor vorige prefabs
-    public GameObject[] prefabs; // Array van prefabs
-    public float swapInterval = 5.0f; // Hoe vaak (in seconden) de prefabs worden geswapt
-    public bool triggerSwap = false; // Bool om direct een swap te triggeren
+    [Header("Mesh Settings")]
+    public SkinnedMeshRenderer skinnedMeshRenderer;
+
+    [Header("ShapeKey1 Animation (Main)")]
+    public float shapeKey1_ZeroToHundredTime = 2.0f;
+    public float shapeKey1_HundredToZeroTime = 2.0f;
+    public float delayAfterShapeKey1ReachesZero = 1.0f;
+
+    [Header("ShapeKey2 Animation (Secondary)")]
+    public float shapeKey2_ZeroToHundredTime = 1.5f;
+    public float shapeKey2_HundredToZeroTime = 1.5f;
+    public float delayBetweenShapeKey2Animations = 0.5f;
+
+    [Header("Prefab Cycling")]
+    public Transform spawnPosition;
+    public Transform hidePosition;
+    public GameObject[] scenePrefabs;
+    public float fullCycleCooldown = 5.0f;
+    public bool manualTrigger = false;
 
     private int currentPrefabIndex = 0;
-    private GameObject[] prefabPool; // Pool van gepoolde prefabs
     private GameObject currentPrefab;
-    private bool isSwappingEnabled = true;
+    private bool isSystemActive = true;
 
     void Start()
     {
-        if (skinnedMeshRenderer == null || prefabs == null || prefabs.Length == 0 || spawnPosition == null || hidePosition == null)
-        {
-            Debug.LogError("Niet alle vereiste variabelen zijn ingesteld in de Inspector!");
-            return;
-        }
-
-        // Maak een pool van prefabs
-        InitializePrefabPool();
-
-        StartCoroutine(SwapAndAnimate());
+        if (!ValidateReferences()) return;
+        InitializePrefabs();
+        StartCoroutine(MainAnimationSequence());
     }
 
     void Update()
     {
-        // Controleer of de trigger bool is geactiveerd
-        if (triggerSwap)
+        if (manualTrigger)
         {
-            triggerSwap = false; // Reset de bool
-            StopAllCoroutines(); // Stop alle lopende coroutines
-            StartCoroutine(SwapAndAnimate()); // Start een nieuwe swap en animatie
+            manualTrigger = false;
+            StopAllCoroutines();
+            StartCoroutine(MainAnimationSequence());
         }
     }
 
-    IEnumerator SwapAndAnimate()
+    bool ValidateReferences()
     {
-        while (isSwappingEnabled)
+        if (skinnedMeshRenderer == null || scenePrefabs.Length == 0)
         {
-            // Wacht tot de volgende swap
-            yield return new WaitForSeconds(swapInterval);
+            Debug.LogError("Essential references missing!");
+            return false;
+        }
+        return true;
+    }
 
-            // Voer de prefab-swap uit
-            SwitchPrefab();
+    IEnumerator MainAnimationSequence()
+    {
+        while (isSystemActive)
+        {
+            yield return new WaitForSeconds(fullCycleCooldown);
+            CyclePrefab();
 
-            // Start de blendshape-animatie (van 0 naar 1)
-            yield return StartCoroutine(ChangeShapeKey(0, 1, animationDuration));
+            // ShapeKey1: 0 → 100
+            yield return StartCoroutine(AnimateShapeKey(0, 100, shapeKey1_ZeroToHundredTime, 0));
 
-            // Wacht voor de terugkeer animatie
-            yield return new WaitForSeconds(delayBeforeReverse);
+            // ShapeKey1: 100 → 0
+            yield return StartCoroutine(AnimateShapeKey(100, 0, shapeKey1_HundredToZeroTime, 0));
 
-            // Start de blendshape-animatie (van 1 naar 0)
-            yield return StartCoroutine(ChangeShapeKey(1, 0, reverseAnimationDuration));
+            // Wacht na ShapeKey1 terug naar 0
+            yield return new WaitForSeconds(delayAfterShapeKey1ReachesZero);
 
-            // Wacht na de terugkeer animatie
-            yield return new WaitForSeconds(delayAfterReverse);
+            // ShapeKey2: 0 → 100 → 0 (alleen wanneer ShapeKey1 op 0 staat)
+            yield return StartCoroutine(AnimateShapeKey(0, 100, shapeKey2_ZeroToHundredTime, 1));
+            yield return new WaitForSeconds(delayBetweenShapeKey2Animations);
+            yield return StartCoroutine(AnimateShapeKey(100, 0, shapeKey2_HundredToZeroTime, 1));
         }
     }
 
-    IEnumerator ChangeShapeKey(float startValue, float endValue, float duration)
+    IEnumerator AnimateShapeKey(float start, float end, float duration, int shapeKeyIndex)
     {
-        float elapsedTime = 0;
-
-        while (elapsedTime < duration)
+        float elapsed = 0;
+        while (elapsed < duration)
         {
-            elapsedTime += Time.deltaTime;
-            float blendValue = Mathf.Lerp(startValue, endValue, elapsedTime / duration);
-            skinnedMeshRenderer.SetBlendShapeWeight(0, blendValue * 100); // Pas de shapekey aan
+            elapsed += Time.deltaTime;
+            float value = Mathf.Lerp(start, end, elapsed / duration);
+            skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, value);
             yield return null;
         }
-
-        skinnedMeshRenderer.SetBlendShapeWeight(0, endValue * 100); // Zorg ervoor dat de eindwaarde exact is
+        skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, end);
     }
 
-    void InitializePrefabPool()
+    void InitializePrefabs()
     {
-        // Maak een pool van prefabs
-        prefabPool = new GameObject[prefabs.Length];
-        for (int i = 0; i < prefabs.Length; i++)
-        {
-            prefabPool[i] = Instantiate(prefabs[i], hidePosition.position, hidePosition.rotation); // Spawn en verberg direct
-            prefabPool[i].SetActive(false); // Zet ze inactief
-        }
-    }
+        foreach (var prefab in scenePrefabs)
+            prefab.transform.position = hidePosition.position;
 
-    void SwitchPrefab()
-    {
-        if (currentPrefab != null)
-        {
-            // Verplaats het huidige object naar de verberglocatie en zet het inactief
-            currentPrefab.transform.position = hidePosition.position;
-            currentPrefab.SetActive(false);
-        }
-
-        // Wissel naar de volgende prefab in de pool
-        currentPrefabIndex = (currentPrefabIndex + 1) % prefabPool.Length;
-        currentPrefab = prefabPool[currentPrefabIndex];
-
-        // Verplaats de nieuwe prefab naar de spawnpositie en zet het actief
+        currentPrefab = scenePrefabs[0];
         currentPrefab.transform.position = spawnPosition.position;
-        currentPrefab.SetActive(true);
+    }
+
+    void CyclePrefab()
+    {
+        currentPrefab.transform.position = hidePosition.position;
+        currentPrefabIndex = (currentPrefabIndex + 1) % scenePrefabs.Length;
+        currentPrefab = scenePrefabs[currentPrefabIndex];
+        currentPrefab.transform.position = spawnPosition.position;
     }
 }
