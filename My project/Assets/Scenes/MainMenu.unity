@@ -16163,12 +16163,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tipText: {fileID: 9206697423350902908}
   tips:
-  - This  screen usually means something is loading.
+  - This screen usually means something is loading.
   - Uhm, try hitting your opponent?
   - This game is made for up to 4 players!
-  - FUCK YOU
+  - Can voor president
   - fortnite
-  tipChangeInterval: 8
+  - dude stop reading this, it really wont make you better
+  tipChangeInterval: 5
 --- !u!114 &4711570831960231234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20499,8 +20500,8 @@ MonoBehaviour:
   maxWidth: 1586
   startLoading: 0
   baseFillSpeed: 0.3
-  speedVariation: 0.3
-  variationFrequency: 1
+  speedVariation: 0.44
+  variationFrequency: 2
   fadeImage: {fileID: 41655874}
   fadeDuration: 1
   stageGameObject: {fileID: 2083882054583805935}
