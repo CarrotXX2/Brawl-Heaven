@@ -38,7 +38,6 @@ public class Player : MonoBehaviour
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
         
         playerInput = GetComponent<PlayerInput>(); // Get the PlayerInput component
-        
         DontDestroyOnLoad(gameObject);
     }
 

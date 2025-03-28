@@ -14,12 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: SmokeScreen
   property: 2
-  lifeTime: 300
+  lifeTime: 1
   distanceThreshold: 0
-  outlineWidth: 1.1
-  mainMaterial: {fileID: -6922793697723135513, guid: 00d221f5e1a43a04599128b588616e75,
-    type: 3}
-  backGroundMaterial: {fileID: 2100000, guid: 9d0c34e0a9be5d14da44027cc0d6d30f, type: 2}
+  outlineWidth: 1
+  mainMaterial: {fileID: 2100000, guid: 64f5b5535aed0ed4d92e4c5035a595b5, type: 2}
+  backGroundMaterial: {fileID: 2100000, guid: 64f5b5535aed0ed4d92e4c5035a595b5, type: 2}
   healingAmount: 0
   healingInterval: 0
   pullForce: 0

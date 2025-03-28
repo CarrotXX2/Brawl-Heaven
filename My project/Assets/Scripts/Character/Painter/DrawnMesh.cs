@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -23,6 +24,8 @@ public class DrawnMesh : MonoBehaviour
 
     [Header("Explosion logic")] 
     private float explosionTimer;
+
+    private bool exploded;
     void Start()
     {
         Destroy(gameObject, drawingProperties.lifeTime);
@@ -30,33 +33,46 @@ public class DrawnMesh : MonoBehaviour
         
         GetComponent<MeshRenderer>().material = drawingProperties.mainMaterial;
         property = drawingProperties.property;
-        
-        healingTimer += Time.time + drawingProperties.healingInterval;
-        explosionTimer = drawingProperties.explosionTimer;
-    }
 
-    private void Update()
-    {
-        CalculateDistance();
-        
         switch (property)
         {
             case Property.SmokeScreen:
             {
-                if (!smokeActivated)
-                {
-                     ParticleSystem.ShapeModule shape = smokeParticleSystem.shape;
-                     shape.shapeType = ParticleSystemShapeType.Mesh;
-                     shape.mesh = gameObject.GetComponent<MeshFilter>().mesh; // Set the mesh dynamically
-                     ParticleSystem smokeParticle = Instantiate(smokeParticleSystem, transform);
-                     smokeParticle.Play();
-                     
-                     smokeActivated = true;
-                }
+                ParticleSystem.ShapeModule shape = smokeParticleSystem.shape;
+                shape.shapeType = ParticleSystemShapeType.Mesh;
+                shape.mesh = gameObject.GetComponent<MeshFilter>().mesh; // Set the mesh dynamically
+                
+                // Put the smokescreen more forward 
+                ParticleSystem smokeParticle = Instantiate(smokeParticleSystem, transform.position + new Vector3(0,0,-0.4f), Quaternion.identity);
+                Destroy(smokeParticle, 14);
+            }
+                break;
+            case Property.Explosion:
+            {
+                 explosionTimer = Time.time + drawingProperties.explosionTimer;
+            }
+                break;
+            case Property.Healingzone:
+            {
+                healingTimer += Time.time + drawingProperties.healingInterval;
+            }
+                break;
+        }
+    }
+
+    private void Update()
+    {
+        switch (property)
+        {
+            case Property.SmokeScreen:
+            {
+                // Do nothing :)
             }
                 break;
             case Property.Blacklhole: 
             {
+                CalculateDistance();
+                
                 // Pull all players towards the black hole for a short amount of time 
                 foreach (GameObject player in playersInRange)
                 {
@@ -71,20 +87,25 @@ public class DrawnMesh : MonoBehaviour
                 break;
             case Property.Explosion:
             {
-                if (Time.time > explosionTimer)
+                CalculateDistance();
+                
+                if (Time.time > explosionTimer && !exploded)
                 {
                     foreach (var player in playersInRange)
                     {
                         // This is terrible but had to make some kind of workaround since I don't have the time to make 
                         // The functions more modular 
                         player.GetComponent<PlayerController>().TakeDamage(null, null, drawingProperties.damage);
-                        player.GetComponent<PlayerController>().TakeKB(null,null ,drawingProperties.knockBack);
+                        player.GetComponent<PlayerController>().TakeKB(null,transform ,drawingProperties.knockBack);
                     }
+                    exploded = true;
                 }
             }
                 break;
             case Property.Healingzone:
             {
+                CalculateDistance();
+                
                 // After a set ammount of time, heal all players inside the drawing
                 if (Time.time > healingTimer)
                 {
@@ -93,7 +114,7 @@ public class DrawnMesh : MonoBehaviour
                         player.GetComponent<PlayerController>().Heal(drawingProperties.healingAmount);
                     }
                     
-                    healingTimer += Time.time + drawingProperties.healingInterval;
+                    healingTimer = Time.time + drawingProperties.healingInterval;
                 }
                 
             }

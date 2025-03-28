@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Debug = UnityEngine.Debug;
@@ -39,12 +40,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("Player Core")]
     [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
-
+    
     [SerializeField] private float movementSpeed; // Base movementspeed
     [SerializeField] private float sprintMultiplier; // Multiplies the base movementspeed for a sprint speed
-
+    [SerializeField] private float diStrength; // How much player can influence their movement when launched
+    
     [SerializeField] private float gravityForce; // Gravity strength
-
+    [SerializeField] private float gravityForceLaunched; // Gravity strength when being launched, for more floaty feel
+    
     [SerializeField] private float jumpForce; // Jump strength
     [SerializeField] private int maxJumps; // Total jumps player can have in total
     [SerializeField] private int jumpsLeft; // Amount of jumps left
@@ -81,10 +84,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float knockbackReduceSpeed; // Controls how quickly knockback slows down
     [SerializeField] private float knockbackDurationFactor;
 
+    [SerializeField] private float velocityMganitude; // 
     
     private float minKnockback;
     private bool isBeingKnocked = false;
     private float knockbackEndTime;
+    
     
     private Vector2 knockbackDirection; // The ammount of force that should be applied on both axis from 0 to 1 
     private Vector2 knockbackVelocity; 
@@ -113,16 +118,20 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     private bool performingAttack; // Bool to keep track if the coroutine is ongoing or not
     public bool[] attackType; // 0 is light attack 1 is heavy attack
-    private bool isCharging; // Bool to check if 
+    public bool isCharging; // Bool to check if player is using a charge attack
     
     [Header("Blocking Logic")] 
     [SerializeField] private float totalBlockingTime;
-
+    [SerializeField] private float shieldReductionFactor;
     [SerializeField] private float currentBlockingTime;
     [SerializeField] private float blockRechargeTime;
+
+    [Header("Ultimate logic")] 
+    [SerializeField] protected float maxUltCharge;
+    [SerializeField] protected float currentUltCharge;
     
     // Factor used for calculating the time that needs to be reduced when hit by an attack
-    [SerializeField] private float shieldReductionFactor; 
+     
 
     [Header("Respawn Logic")]
     private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
@@ -133,7 +142,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [Header("Camera Control")] // Need to change camera logic 
     [SerializeField] private float cameraFollowWeight;
-
     [SerializeField] private float cameraFollowRadius;
     
     [Header("Animation Logic")]
@@ -182,10 +190,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         LedgeGrab();
         Blocking();
-    
-        if(isCharging) ChargeLogic();
         
         AnimationStates(); // Manages the animations
+        
+        if(isCharging) ChargeLogic();
+        // if (currentUltCharge < maxUltCharge) ChargeUltimate();
+        
     }
 
   
@@ -213,18 +223,37 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     #region Movement
 
-    private void ApplyGravity()
+    private void ApplyGravity() 
     {
-        if (movementState == MovementState.InAir || movementState == MovementState.Launched) // Apply gravity only if In air or launched
+        switch (movementState)
         {
-            rb.AddForce(Vector3.down * gravityForce, ForceMode.Acceleration);
+            case MovementState.Launched:
+                rb.AddForce(Vector3.down * gravityForceLaunched, ForceMode.Force);
+                break;
+            case MovementState.InAir:
+                rb.AddForce(Vector3.down * gravityForce, ForceMode.Force);
+                break;
         }
     }
 
     private void Move()
     {
+        if (isBeingKnocked)
+        {
+            return;
+        }
         switch (movementState)
         {
+            case MovementState.LedgeGrabbing:
+                // Cant move/rotate while ledge grabbing
+
+                break;
+
+            case MovementState.Launched:
+                // Let the player have some agency to move while being launched 
+                rb.velocity += new Vector3(moveInput.x * diStrength * Time.deltaTime, moveInput.y * diStrength * Time.deltaTime, 0);
+                break;
+            
             default:
                 Vector3 velocity = rb.velocity;
                 velocity.x = moveInput.x * (isSprinting ? movementSpeed * sprintMultiplier : movementSpeed);
@@ -236,21 +265,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 }
 
                 break;
-            case MovementState.LedgeGrabbing:
-                // Cant move/rotate while ledge grabbing
-
-                break;
-
-            case MovementState.Launched:
-                // movement logic when launched 
-
-                break;
+           
         }
     }
 
     private bool CanMove()
     {
-        if (isCharging || attackType[1] || combatState == CombatState.Blocking || combatState == CombatState.HitStun)
+        if (isCharging || attackType[1] || combatState == CombatState.Blocking || combatState == CombatState.HitStun 
+            || movementState == MovementState.Launched || isBeingKnocked)
         {
             return false;
         }
@@ -295,17 +317,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if (!CanPerformAction()) return;
         switch (movementState)
         {
-            default:
-                if (jumpsLeft > 0 && ctx.performed)
-                {
-                    jumpsLeft--;
-                    
-                    SetTriggerAnimation("Jump");
-                    
-                    rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
-                }
-
-                break;
             case MovementState.LedgeGrabbing:
                 SetTriggerAnimation("Jump");
                 rb.isKinematic = false;
@@ -317,6 +328,19 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             case MovementState.Launched:
                 // Can't jump
                 break;
+            
+            default:
+                if (jumpsLeft > 0 && ctx.performed)
+                {
+                    jumpsLeft--;
+                    
+                    SetTriggerAnimation("Jump");
+                    
+                    rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+                }
+
+                break;
+            
         }
     }
     
@@ -334,7 +358,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         SetTriggerAnimation("Dash");
         Vector3 dashVelocity = new Vector3(dashForce * direction, 0, 0);
         dashVelocity.y = rb.velocity.y; // Preserve gravity effect
-        rb.velocity = dashVelocity;
+        rb.AddForce(dashVelocity, ForceMode.Impulse);
         
         StartCoroutine(EndDash());
     }
@@ -409,10 +433,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private bool CanPerformAction()
     {
-        return !(HasState(MovementState.Dashing) || HasState(CombatState.HitStun) ||
-                 HasState(CombatState.Attacking) || HasState(CombatState.Blocking) || touchedDeathZone);
+        return !(HasState(MovementState.Dashing) || HasState(MovementState.Launched) ||
+                 HasState(CombatState.HitStun) || HasState(CombatState.Attacking) ||
+                 HasState(CombatState.Blocking) || touchedDeathZone);
     }
-
     private void OnCollisionEnter(Collision collision) // Having both a ray and collision detection helps for easier walljump implementation with certain objects
     {
         if (collision.gameObject.transform.CompareTag("Wall Jump"))
@@ -426,21 +450,21 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if ((movementState & MovementState.Dashing) != 0) return true;
 
         bool grounded = Physics.Raycast(playerTransform.position, Vector3.down, groundCheckDistance, groundCheckLayer);
-        
+         
         if (grounded)
         {
             movementState = MovementState.Grounded;
             rb.drag = groundedDrag;
         }
-        else if (movementState != MovementState.LedgeGrabbing)
+        else if (movementState != MovementState.LedgeGrabbing && movementState != MovementState.Launched)
         {
             movementState = MovementState.InAir;
             rb.drag = inAirDrag;
         }
 
-        return true;
+        return grounded;
     }
-
+    
     private void ResetJumps()
     {
         jumpsLeft = maxJumps;
@@ -505,12 +529,11 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             if (!currentAttack.chargeAttack)
             {
                 attackCoroutine = StartCoroutine(PerformAttack(currentAttack, colliders, 1));
-                return;
             }
             else
             {
-                isCharging = true;
                 SetAnimation(currentAttack.chargeAnimation.name);
+                isCharging = true;
                 print($"Play animation {currentAttack.chargeAnimation.name}");
             }
         }
@@ -605,7 +628,11 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
         foreach (var collider in colliders)
         {
-            collider.enabled = true;
+            if (collider.enabled == false)
+            {
+                collider.enabled = true;
+            }
+            
             DetectChargedHits(attackData, chargedDamage ,collider);
         }
 
@@ -627,6 +654,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     private void DetectHits(AttackData attackData, Collider attackCollider)
     {
+        // Create a HashSet to track unique hit targets
+        HashSet<GameObject> hitTargets = new HashSet<GameObject>();
+        
         // Corrected size calculation to ensure full detection
         Vector3 boxSize = attackCollider.bounds.size; 
 
@@ -644,15 +674,22 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             // Ignore self
             if (hit.gameObject == gameObject) continue;
             
+            if (hitTargets.Contains(hit.gameObject)) continue;
+            
             if (damageable != null)
             {
                 damageable.TakeDamage(attackData, transform, attackData.damage);
+                
+                hitTargets.Add(hit.gameObject);
             }
         }
     }
     
     private void DetectChargedHits(AttackData attackData, float damage, Collider attackCollider)
     {
+        // Create a HashSet to track unique hit targets
+        HashSet<GameObject> hitTargets = new HashSet<GameObject>();
+        
         // Corrected size calculation to ensure full detection
         Vector3 boxSize = attackCollider.bounds.size; 
         Collider[] hitObjects = Physics.OverlapBox(
@@ -667,10 +704,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             
             // Ignore self
             if (hit.gameObject == gameObject) continue;
+
+            if (hitTargets.Contains(hit.gameObject)) continue;
             
             if (damageable != null)
             {
                 damageable.TakeDamage(attackData, damage ,transform);
+                
+                hitTargets.Add(hit.gameObject);
             }
         }
     }
@@ -681,9 +722,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         attackType[1] = false;
         
         StopCoroutine(attackCoroutine);
+        combatState = CombatState.Neutral;
     }
 
-    public void TakeDamage([CanBeNull] AttackData attackData, [CanBeNull] Transform enemyTransform, float damage)
+    public void TakeDamage([CanBeNull] AttackData attackData, Transform enemyTransform, float damage)
     {
         switch (combatState)
         {
@@ -693,7 +735,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                     totalDamageTaken += damage;
                     
                     TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
-                    StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
+                    // StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
                 }
                 else // Explosion damage
                 {
@@ -715,7 +757,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 print($"Took {chargedDamage} damage");
 
                 TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
-                StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
+               // StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
 
                 break;
             case CombatState.Blocking:
@@ -728,6 +770,104 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     public void Heal(int healAmount)
     {
         totalDamageTaken -= healAmount;
+    }
+    /*
+    private void UpdateKnockback()
+{
+    if (isBeingKnocked)
+    {
+        if (Time.time >= knockbackEndTime)
+        {
+            // Smoothly reset knockback state
+            isBeingKnocked = false;
+            rb.velocity = Vector3.zero;
+            movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
+            return;
+        }
+
+        movementState = MovementState.Launched;
+
+        // More gradual velocity reduction
+        Vector3 currentVelocity = rb.velocity;
+        
+        // Reduce horizontal velocity more gradually
+        currentVelocity.x = Mathf.Lerp(currentVelocity.x, 0, Time.deltaTime * knockbackReduceSpeed);
+
+        // Add slight air control during knockback
+        float horizontalInput = Mathf.Abs(moveInput.x);
+        if (horizontalInput > deadZoneThreshold)
+        {
+            // Slight directional influence during knockback
+            float influence = 0.2f; // Adjust this value to control air control
+            currentVelocity.x += moveInput.x * influence;
+        }
+
+        // Ensure vertical movement is still gravity-affected
+        currentVelocity.y = rb.velocity.y;
+
+        rb.velocity = currentVelocity;
+    }
+}
+
+public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float kb)
+{
+    if (attackData)
+    {
+        minKnockback = attackData.minKnockback;
+        knockbackDirection = attackData.hitDirection;
+    }
+    else
+    {
+        minKnockback = 0;
+        knockbackDirection = Vector2.one;
+    }
+    
+    float knockbackIntensity = (
+        ((totalDamageTaken / 100) * kb * (200 / (weight + 100)) + minKnockback));
+
+    // Get base direction from attacker to target
+    Vector3 baseDirection = (transform.position - kbSource.position).normalized;
+
+    // Use the attack's hit direction with more dynamic trajectory
+    Vector2 finalDirection = new Vector2(Mathf.Sign(baseDirection.x) * Mathf.Abs(knockbackDirection.x), knockbackDirection.y);
+    
+    print(finalDirection);
+    // More gradual knockback application
+    knockbackVelocity = finalDirection * knockbackIntensity;
+
+    // Set extended knockback state
+    movementState = MovementState.Launched;
+    isBeingKnocked = true;
+    knockbackEndTime = Time.time + (knockbackIntensity * knockbackDurationFactor * 1.2f); // Slightly longer duration
+
+    // Clear velocity with more controlled approach
+    rb.velocity = Vector3.zero;
+
+    // Apply initial impulse with more subtle application
+    rb.AddForce(knockbackVelocity * 0.5f, ForceMode.Impulse);
+    rb.AddForce(knockbackVelocity * 0.5f, ForceMode.Acceleration); // Gradual additional force
+
+    Debug.Log($"Smash-Style Knockback - Intensity: {knockbackIntensity}, Direction: {knockbackVelocity}");
+}
+*/
+    
+    private void UpdateKnockback()
+    {
+        if (isBeingKnocked)
+        {
+            if (Mathf.Abs(rb.velocity.x) < velocityMganitude)
+            {
+                // Reset knockback state more comprehensively
+                isBeingKnocked = false;
+                movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
+                return;
+            }
+            movementState = MovementState.Launched;
+            // Gradually reduce knockback with a more controlled approach
+            knockbackVelocity *= knockbackReduceSpeed;
+            rb.velocity = new Vector3(knockbackVelocity.x, knockbackVelocity.y, 0);
+          
+        }
     }
 
     public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float kb)
@@ -742,75 +882,68 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             minKnockback = 0;
             knockbackDirection = Vector2.one;
         }
-    
-        // Calculate knockback intensity based on damage
+
+        // More precise knockback calculation
         float knockbackIntensity = (((totalDamageTaken / 100) * kb * (200 / (weight + 100)) + minKnockback));
-    
+
         // Get base direction from attacker to target
         Vector3 baseDirection = (transform.position - kbSource.position).normalized;
-   
+
         // Use the attack's hit direction directly
-        Vector2 finalDirection = new Vector2(
-            Mathf.Sign(baseDirection.x) * knockbackDirection.x, 
-            knockbackDirection.y
+        Vector3 finalDirection = new Vector3(
+            Mathf.Sign(baseDirection.x) * knockbackDirection.x,
+            knockbackDirection.y,
+            0
         );
-    
+
         // Calculate and apply launch force
         knockbackVelocity = finalDirection * knockbackIntensity;
-    
-        // Debug prints to verify calculations
-        Debug.Log($"Base Direction: {baseDirection}");
-        Debug.Log($"Hit Direction: {knockbackDirection}");
-        Debug.Log($"Final Direction: {finalDirection}");
-        Debug.Log($"Knockback Velocity: {knockbackVelocity}");
 
         // Set knockback state
         movementState = MovementState.Launched;
         isBeingKnocked = true;
         knockbackEndTime = Time.time + (knockbackIntensity * knockbackDurationFactor);
-    
-        // Apply initial impulse
-        rb.velocity = Vector2.zero;
-        rb.AddForce(knockbackVelocity, ForceMode.Impulse);
-    }
 
-    private void UpdateKnockback()
-    {
-        if (isBeingKnocked)
-        {
-            if (Time.time >= knockbackEndTime)
-            {
-                isBeingKnocked = false;
-                movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
-                return;
-            }
-    
-            // Gradually reduce knockback
-            knockbackVelocity *= knockbackReduceSpeed;
-            rb.AddForce(knockbackVelocity, ForceMode.Force);
-        }
-    }
+        // Clear any current velocity before applying knockback
+        rb.velocity = Vector3.zero;
+
+        // Apply initial impulse
+        rb.velocity = new Vector3(knockbackVelocity.x, knockbackVelocity.y, 0);
+
+        // Additional debug logging
+        Debug.Log($"Knockback Applied - Intensity: {knockbackIntensity}, Direction: {knockbackVelocity}");
+    } 
 
     private IEnumerator ApplyHitStun(AttackData attackData)
     {
         combatState = CombatState.HitStun;
-        movementState = MovementState.Launched; // Ensure consistent state
 
+        // Cancel any ongoing attack
         if (performingAttack && combatState != CombatState.Unstoppable)
         {
-            StopCoroutine(attackCoroutine);
-        }
-        SetTriggerAnimation("GettingHit");
+            if (attackCoroutine != null)
+            {
+                StopCoroutine(attackCoroutine);
+            }
 
+            CancelAttack(); // Use your existing method to reset attack states
+        }
+
+        // SetTriggerAnimation("GettingHit");
         yield return new WaitForSeconds(attackData.hitStun);
 
+        // Reset states more comprehensively
         combatState = CombatState.Neutral;
-        movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
+
+        // Ensure rigidbody is fully reset
+        rb.velocity = Vector3.zero;
     }
+
     private bool CanAttack()
     {
         if (movementState == MovementState.Grounded && combatState == CombatState.Neutral ||
-            movementState == MovementState.InAir && combatState == CombatState.Neutral)
+            movementState == MovementState.InAir && combatState == CombatState.Neutral || combatState == CombatState.Attacking
+            || combatState == CombatState.Blocking)
         {
             return true;
         }
@@ -835,10 +968,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         }
     }
 
-    public virtual void OnUltimateCast(InputAction.CallbackContext ctx)
-    {
-        // Every Character (if we add more) Has their own ultimate 
-    }
     
     #endregion
 
@@ -849,7 +978,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if (ctx.started && CanBlock()) // When button is pressed
         {
             if (!CanPerformAction()) return;
-            
             Debug.Log("Blocking started");
             combatState = CombatState.Blocking;
             rb.velocity = Vector3.zero; 
@@ -896,6 +1024,23 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     #endregion
 
+    #region Ult Logic
+
+    private void ChargeUltimate()
+    {   
+        currentUltCharge += Time.deltaTime;
+    }
+    public virtual void OnUltimateCast(InputAction.CallbackContext ctx)
+    { 
+        // Every Character (if we add more) Has their own ultimate \
+        if (currentUltCharge <= maxUltCharge)
+        {
+            return;
+        }
+    }
+        
+
+    #endregion
     #region Death
 
     private void OnTriggerEnter(Collider other) // When you hit the outer borders the player should die 
@@ -905,15 +1050,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             if (!touchedDeathZone)
             {
                 touchedDeathZone = true;
+                knockbackVelocity = Vector2.zero;
+                rb.velocity = Vector2.zero;
                 OnStockLost();
             }
-            
-        }
-
-        if (other.CompareTag("Drawing"))
-        {
-            print("Colliding with drawing");
-            // other.GetComponent<DrawingClass>();
         }
     }
     private void OnStockLost()
@@ -935,7 +1075,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void Respawn()
     {
         totalDamageTaken = 0;
+        knockbackVelocity = Vector2.zero;
         rb.velocity = Vector2.zero;
+        
+        movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
         StartCoroutine(GameplayManager.Instance.RespawnPlayer(gameObject));
     }
 
@@ -961,8 +1104,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void AnimationStates() // Sets animation bools based on state
     {
-        if (isCharging) return;
-     
+        if (isTriggerActive && combatState == CombatState.Attacking) return;
+        
+        if (isCharging)
+        {
+            SetAnimation(currentAttack.chargeAnimation.name);
+            return;
+        }
+        
         switch (combatState)
         {
             case CombatState.Blocking:

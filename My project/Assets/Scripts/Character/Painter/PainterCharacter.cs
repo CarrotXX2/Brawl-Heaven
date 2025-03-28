@@ -36,6 +36,12 @@ public class PainterCharacter : PlayerController
 
     private List<Vector3> drawnPoints = new List<Vector3>();
 
+    [Header("Property Selection")]
+    [SerializeField] private float height; // How high the wheel floats above the player
+    [SerializeField] private GameObject propertyWheel;
+    [SerializeField] private GameObject propertyWheelInstance;
+    [SerializeField] private GameObject arrow;
+    
     [Space] private bool usingUltimate = false;
 
     protected override void Update()
@@ -56,7 +62,8 @@ public class PainterCharacter : PlayerController
     }
 
     public override void OnUltimateCast(InputAction.CallbackContext ctx)
-    {
+    {   
+        base.OnUltimateCast(ctx);
         if (!ctx.started) return;
 
         // If we're already using the ultimate and drawing, end the ultimate
@@ -81,8 +88,8 @@ public class PainterCharacter : PlayerController
 
         Debug.Log("Cast Ultimate");
 
-        // Instantiate cursor at player position (including Z coordinate)
-        if (!cursorInstance)
+        // Instantiate cursor and Property wheel at player position (including Z coordinate)
+        if (!cursorInstance && !propertyWheelInstance)
         {
             cursorPosition = playerTransform.position;
             cursorInstance = Instantiate(cursor, playerTransform.position, Quaternion.identity);
@@ -143,7 +150,7 @@ public class PainterCharacter : PlayerController
 
     public override void OnRightAnalogStickMove(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed) return;
+        if (!ctx.performed && !usingUltimate) return;
         Vector2 pointerDirection = ctx.ReadValue<Vector2>();
 
         // Only update the direction if the stick is pushed beyond the deadzone
@@ -151,9 +158,13 @@ public class PainterCharacter : PlayerController
         {
             propertyIndex = GetDirectionIndex(pointerDirection);
             lastDirectionIndex = propertyIndex;
-
+            
             // Handle the new direction (e.g., change a property based on direction)
             HandleDirectionChange(lastDirectionIndex);
+            
+            // Change arrow rotation +180 degrees since the pointer is reversed otherwise
+            float angle = Mathf.Atan2(pointerDirection.y, pointerDirection.x) * Mathf.Rad2Deg + 180;
+            arrow.transform.rotation = Quaternion.Euler(0, 0, angle);
         }
 
         // Note: We don't update lastDirectionIndex when within deadzone,
@@ -235,7 +246,8 @@ public class PainterCharacter : PlayerController
         // DrawingBackground is for generating an outline of the mesh 
         GameObject drawingObject = new GameObject("DrawnShape");
         GameObject drawingBackground = new GameObject("Drawing Background");
-
+        
+        Destroy(drawingBackground, drawingProperties[propertyIndex].lifeTime);
         drawingBackground.transform.localScale *= drawingProperties[propertyIndex].outlineWidth;
 
         generatedObjects.Add(drawingObject);

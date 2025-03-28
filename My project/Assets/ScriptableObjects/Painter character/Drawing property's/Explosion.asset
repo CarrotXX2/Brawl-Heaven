@@ -22,6 +22,6 @@ MonoBehaviour:
   healingAmount: 0
   healingInterval: 0
   pullForce: 0
-  damage: 35
-  knockBack: 50
+  damage: 30
+  knockBack: 45
   explosionTimer: 3
