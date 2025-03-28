@@ -37,8 +37,8 @@ Material:
     - _BOOLEAN: 1
     - _QueueControl: 0
     - _QueueOffset: 15
-    - _Speed: 1.71
-    - _Tiling: 1.88
+    - _Speed: 0.32
+    - _Tiling: 5
     - _Tiling_1: 5.65
     - _Transparancy: 0.34
     m_Colors:

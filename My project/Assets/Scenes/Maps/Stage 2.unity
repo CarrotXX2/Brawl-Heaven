@@ -1163,19 +1163,67 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   skinnedMeshRenderer: {fileID: 857795251}
-  shapeKey1_ZeroToHundredTime: 3
-  shapeKey1_HundredToZeroTime: 5
-  delayAfterShapeKey1ReachesZero: 1
-  shapeKey2_ZeroToHundredTime: 1.5
-  shapeKey2_HundredToZeroTime: 1.5
-  delayBetweenShapeKey2Animations: 0
+  shapeKeyIndex: 0
+  zeroToHundredCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  hundredToZeroCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  zeroToHundredTime: 2
+  hundredToZeroTime: 2
+  holdTimeAtMax: 0.5
+  holdTimeAtMin: 1
+  delayBetweenCycles: 3
   spawnPosition: {fileID: 618037816}
   hidePosition: {fileID: 75099669}
   scenePrefabs:
   - {fileID: 456684435}
   - {fileID: 1531359618}
-  fullCycleCooldown: 5
   manualTrigger: 0
+  autoCyclePrefabs: 1
 --- !u!1 &953022735
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,23 +5,23 @@ public class ShapeKeyAnimator : MonoBehaviour
 {
     [Header("Mesh Settings")]
     public SkinnedMeshRenderer skinnedMeshRenderer;
+    public int shapeKeyIndex = 0;
 
-    [Header("ShapeKey1 Animation (Main)")]
-    public float shapeKey1_ZeroToHundredTime = 2.0f;
-    public float shapeKey1_HundredToZeroTime = 2.0f;
-    public float delayAfterShapeKey1ReachesZero = 1.0f;
-
-    [Header("ShapeKey2 Animation (Secondary)")]
-    public float shapeKey2_ZeroToHundredTime = 1.5f;
-    public float shapeKey2_HundredToZeroTime = 1.5f;
-    public float delayBetweenShapeKey2Animations = 0.5f;
+    [Header("Animation Settings")]
+    public AnimationCurve zeroToHundredCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    public AnimationCurve hundredToZeroCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+    public float zeroToHundredTime = 2.0f;
+    public float hundredToZeroTime = 2.0f;
+    public float holdTimeAtMax = 0.5f;
+    public float holdTimeAtMin = 1.0f;
+    public float delayBetweenCycles = 3.0f;
 
     [Header("Prefab Cycling")]
     public Transform spawnPosition;
     public Transform hidePosition;
     public GameObject[] scenePrefabs;
-    public float fullCycleCooldown = 5.0f;
     public bool manualTrigger = false;
+    public bool autoCyclePrefabs = true;
 
     private int currentPrefabIndex = 0;
     private GameObject currentPrefab;
@@ -58,32 +58,37 @@ public class ShapeKeyAnimator : MonoBehaviour
     {
         while (isSystemActive)
         {
-            yield return new WaitForSeconds(fullCycleCooldown);
-            CyclePrefab();
+            if (autoCyclePrefabs)
+            {
+                CyclePrefab();
+            }
 
-            // ShapeKey1: 0 → 100
-            yield return StartCoroutine(AnimateShapeKey(0, 100, shapeKey1_ZeroToHundredTime, 0));
+            // ShapeKey: 0 → 100 with custom curve
+            yield return StartCoroutine(AnimateShapeKey(0, 100, zeroToHundredTime, zeroToHundredCurve));
 
-            // ShapeKey1: 100 → 0
-            yield return StartCoroutine(AnimateShapeKey(100, 0, shapeKey1_HundredToZeroTime, 0));
+            // Hold at max value
+            yield return new WaitForSeconds(holdTimeAtMax);
 
-            // Wacht na ShapeKey1 terug naar 0
-            yield return new WaitForSeconds(delayAfterShapeKey1ReachesZero);
+            // ShapeKey: 100 → 0 with custom curve
+            yield return StartCoroutine(AnimateShapeKey(100, 0, hundredToZeroTime, hundredToZeroCurve));
 
-            // ShapeKey2: 0 → 100 → 0 (alleen wanneer ShapeKey1 op 0 staat)
-            yield return StartCoroutine(AnimateShapeKey(0, 100, shapeKey2_ZeroToHundredTime, 1));
-            yield return new WaitForSeconds(delayBetweenShapeKey2Animations);
-            yield return StartCoroutine(AnimateShapeKey(100, 0, shapeKey2_HundredToZeroTime, 1));
+            // Hold at min value
+            yield return new WaitForSeconds(holdTimeAtMin);
+
+            // Delay between full cycles
+            yield return new WaitForSeconds(delayBetweenCycles);
         }
     }
 
-    IEnumerator AnimateShapeKey(float start, float end, float duration, int shapeKeyIndex)
+    IEnumerator AnimateShapeKey(float start, float end, float duration, AnimationCurve curve)
     {
         float elapsed = 0;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float value = Mathf.Lerp(start, end, elapsed / duration);
+            float t = Mathf.Clamp01(elapsed / duration);
+            float curveValue = curve.Evaluate(t);
+            float value = Mathf.Lerp(start, end, curveValue);
             skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, value);
             yield return null;
         }
@@ -105,5 +110,22 @@ public class ShapeKeyAnimator : MonoBehaviour
         currentPrefabIndex = (currentPrefabIndex + 1) % scenePrefabs.Length;
         currentPrefab = scenePrefabs[currentPrefabIndex];
         currentPrefab.transform.position = spawnPosition.position;
+    }
+
+    // Public methods for external control
+    public void StartAnimationSequence()
+    {
+        StopAllCoroutines();
+        StartCoroutine(MainAnimationSequence());
+    }
+
+    public void StopAnimation()
+    {
+        StopAllCoroutines();
+    }
+
+    public void SetShapeKeyValue(float value)
+    {
+        skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, Mathf.Clamp(value, 0, 100));
     }
 }
