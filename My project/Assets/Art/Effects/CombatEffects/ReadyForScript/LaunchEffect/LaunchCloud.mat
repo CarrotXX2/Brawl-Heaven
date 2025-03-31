@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BlockBubble Variant
+  m_Name: LaunchCloud
   m_Shader: {fileID: -6465566751694194690, guid: d0320d20869d77e4bbf73fdff25b4fb9,
     type: 3}
   m_Parent: {fileID: -876546973899608171, guid: d0320d20869d77e4bbf73fdff25b4fb9,
@@ -24,10 +24,14 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _Texture2D:
+        m_Texture: {fileID: 2800000, guid: 4f68dda020b348a4bbd6e5f0e82f7d79, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Bubbleredness: 0
+    - _Bubbleredness: 0.724
     - _ColorOrGradient: 0
     - _Float: 0
     - _QueueControl: 0

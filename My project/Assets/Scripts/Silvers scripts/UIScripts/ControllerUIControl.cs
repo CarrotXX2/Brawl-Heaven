@@ -10,7 +10,7 @@ public class ControllerUIControl : MonoBehaviour
 {
     public static ControllerUIControl instance;
     
-    public GameObject startFirst, CharacterSelect, StageSelect, Settings, Tutorial, Credits, DLC;
+    public GameObject startFirst, CharacterSelect, StageSelect, Settings, Tutorial, Credits, DLC, IngameSettings, pausebutton;
     
     public bool characterSelect = false;
     private void Awake()
@@ -75,7 +75,22 @@ public class ControllerUIControl : MonoBehaviour
         EventSystem.current.SetSelectedGameObject(null);
         EventSystem.current.SetSelectedGameObject(DLC);
     }
-    
+
+    public void OpenPlayerSettings()
+    {
+        RemovePlayerCursor();
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(IngameSettings);
+    }
+
+    public void Pause()
+    {
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(pausebutton);
+    }
+
+
     private void RemovePlayerCursor()
     {
         if (!characterSelect) return;

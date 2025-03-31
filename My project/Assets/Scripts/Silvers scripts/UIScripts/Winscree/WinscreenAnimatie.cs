@@ -249,7 +249,7 @@ public class WinScreenAnimatie : MonoBehaviour
 
         countdownText.text = "Loading...";
 
-        // Voer fade uit voordat we de scene laden
+
         if (fadeImage != null)
         {
             yield return StartCoroutine(FadeToBlack());

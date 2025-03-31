@@ -21959,6 +21959,8 @@ MonoBehaviour:
   Tutorial: {fileID: 8138474079897588667}
   Credits: {fileID: 349497172}
   DLC: {fileID: 7779209989769498966}
+  IngameSettings: {fileID: 0}
+  pausebutton: {fileID: 0}
   characterSelect: 0
 --- !u!222 &7285862469028688333
 CanvasRenderer:

@@ -1,131 +1,99 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class ShapeKeyAnimator : MonoBehaviour
+[RequireComponent(typeof(SkinnedMeshRenderer))]
+public class BlendShapeLooperWithCooldown : MonoBehaviour
 {
-    [Header("Mesh Settings")]
-    public SkinnedMeshRenderer skinnedMeshRenderer;
-    public int shapeKeyIndex = 0;
+    [Header("BlendShape Settings")]
+    [Tooltip("Index of the blend shape to animate")]
+    public int blendShapeIndex = 0;
 
     [Header("Animation Settings")]
-    public AnimationCurve zeroToHundredCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    public AnimationCurve hundredToZeroCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
-    public float zeroToHundredTime = 2.0f;
-    public float hundredToZeroTime = 2.0f;
-    public float holdTimeAtMax = 0.5f;
-    public float holdTimeAtMin = 1.0f;
-    public float delayBetweenCycles = 3.0f;
+    [Tooltip("Duration of the animation in seconds")]
+    public float animationDuration = 2f;
+    [Tooltip("Duration of cooldown between animations in seconds")]
+    public float cooldownDuration = 1f;
+    [Tooltip("Controls the acceleration (1 = linear)")]
+    [Range(0.1f, 5f)] public float curvePower = 2f;
+    [Tooltip("Smoothness of the transition")]
+    [Range(0.1f, 3f)] public float smoothness = 1f;
 
-    [Header("Prefab Cycling")]
-    public Transform spawnPosition;
-    public Transform hidePosition;
-    public GameObject[] scenePrefabs;
-    public bool manualTrigger = false;
-    public bool autoCyclePrefabs = true;
-
-    private int currentPrefabIndex = 0;
-    private GameObject currentPrefab;
-    private bool isSystemActive = true;
+    private SkinnedMeshRenderer skinnedMeshRenderer;
+    private float cycleTimer;
+    private bool isAnimating;
+    private AnimationCurve animationCurve;
 
     void Start()
     {
-        if (!ValidateReferences()) return;
-        InitializePrefabs();
-        StartCoroutine(MainAnimationSequence());
+        skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+        CreateAnimationCurve();
+        isAnimating = true;
+        cycleTimer = 0f;
     }
 
     void Update()
     {
-        if (manualTrigger)
-        {
-            manualTrigger = false;
-            StopAllCoroutines();
-            StartCoroutine(MainAnimationSequence());
-        }
-    }
+        cycleTimer += Time.deltaTime;
 
-    bool ValidateReferences()
-    {
-        if (skinnedMeshRenderer == null || scenePrefabs.Length == 0)
+        if (isAnimating)
         {
-            Debug.LogError("Essential references missing!");
-            return false;
-        }
-        return true;
-    }
-
-    IEnumerator MainAnimationSequence()
-    {
-        while (isSystemActive)
-        {
-            if (autoCyclePrefabs)
+            // Animation phase
+            if (cycleTimer <= animationDuration)
             {
-                CyclePrefab();
+                float normalizedTime = cycleTimer / animationDuration;
+                float weight = animationCurve.Evaluate(normalizedTime);
+                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, weight * 100f);
+            }
+            else
+            {
+                // Transition to cooldown
+                isAnimating = false;
+                cycleTimer = 0f;
+                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, 0f);
+            }
+        }
+        else
+        {
+            // Cooldown phase
+            if (cycleTimer >= cooldownDuration)
+            {
+                // Transition back to animation
+                isAnimating = true;
+                cycleTimer = 0f;
+            }
+        }
+    }
+
+    void CreateAnimationCurve()
+    {
+        animationCurve = new AnimationCurve();
+
+        // Start at 0
+        animationCurve.AddKey(0f, 0f);
+
+        // Peak at middle of animation duration
+        animationCurve.AddKey(0.5f, 1f);
+
+        // End back at 0
+        animationCurve.AddKey(1f, 0f);
+
+        // Adjust curve handles for smoothness and shape
+        for (int i = 0; i < animationCurve.length; i++)
+        {
+            Keyframe key = animationCurve[i];
+
+            if (i == 1) // At the peak keyframe
+            {
+                key.inTangent = smoothness * curvePower;
+                key.outTangent = -smoothness * curvePower;
+            }
+            else
+            {
+                key.inTangent = 0;
+                key.outTangent = 0;
             }
 
-            // ShapeKey: 0 → 100 with custom curve
-            yield return StartCoroutine(AnimateShapeKey(0, 100, zeroToHundredTime, zeroToHundredCurve));
-
-            // Hold at max value
-            yield return new WaitForSeconds(holdTimeAtMax);
-
-            // ShapeKey: 100 → 0 with custom curve
-            yield return StartCoroutine(AnimateShapeKey(100, 0, hundredToZeroTime, hundredToZeroCurve));
-
-            // Hold at min value
-            yield return new WaitForSeconds(holdTimeAtMin);
-
-            // Delay between full cycles
-            yield return new WaitForSeconds(delayBetweenCycles);
+            animationCurve.MoveKey(i, key);
         }
     }
 
-    IEnumerator AnimateShapeKey(float start, float end, float duration, AnimationCurve curve)
-    {
-        float elapsed = 0;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float curveValue = curve.Evaluate(t);
-            float value = Mathf.Lerp(start, end, curveValue);
-            skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, value);
-            yield return null;
-        }
-        skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, end);
-    }
-
-    void InitializePrefabs()
-    {
-        foreach (var prefab in scenePrefabs)
-            prefab.transform.position = hidePosition.position;
-
-        currentPrefab = scenePrefabs[0];
-        currentPrefab.transform.position = spawnPosition.position;
-    }
-
-    void CyclePrefab()
-    {
-        currentPrefab.transform.position = hidePosition.position;
-        currentPrefabIndex = (currentPrefabIndex + 1) % scenePrefabs.Length;
-        currentPrefab = scenePrefabs[currentPrefabIndex];
-        currentPrefab.transform.position = spawnPosition.position;
-    }
-
-    // Public methods for external control
-    public void StartAnimationSequence()
-    {
-        StopAllCoroutines();
-        StartCoroutine(MainAnimationSequence());
-    }
-
-    public void StopAnimation()
-    {
-        StopAllCoroutines();
-    }
-
-    public void SetShapeKeyValue(float value)
-    {
-        skinnedMeshRenderer.SetBlendShapeWeight(shapeKeyIndex, Mathf.Clamp(value, 0, 100));
-    }
 }
