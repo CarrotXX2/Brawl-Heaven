@@ -22,14 +22,14 @@ MonoBehaviour:
   minChargeDamage: 10
   maxChargeDamage: 25
   maxChargeTime: 4
-  knockback: 45
+  knockback: 25
   minKnockback: 10
   hitDirection: {x: 1, y: 1.2}
   unstoppable: 0
   hitStun: 0.2
   startupTime: 0.4
-  activeTime: 2.3
-  moveCooldown: 0
+  activeTime: 1.8
+  moveCooldown: 0.4
   moveOnAttack: 0
   movementDirection: {x: 0, y: 0}
   moveForce: 0

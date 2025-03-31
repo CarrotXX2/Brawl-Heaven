@@ -16,7 +16,7 @@ MonoBehaviour:
   animation: {fileID: 4419922527597930921, guid: 8b825605a771d894c9b7ab866fdccc42,
     type: 3}
   chargeAnimation: {fileID: 0}
-  damage: 0
+  damage: 8
   chargeAttack: 0
   minChargeDamage: 0
   maxChargeDamage: 0
@@ -26,7 +26,7 @@ MonoBehaviour:
   hitDirection: {x: 0.3, y: -1}
   unstoppable: 0
   hitStun: 0.1
-  startupTime: 0.3
+  startupTime: 0.1
   activeTime: 1
   moveCooldown: 0
   moveOnAttack: 0

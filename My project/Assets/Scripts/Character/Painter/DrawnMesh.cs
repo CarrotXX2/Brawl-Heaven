@@ -24,8 +24,8 @@ public class DrawnMesh : MonoBehaviour
 
     [Header("Explosion logic")] 
     private float explosionTimer;
-
     private bool exploded;
+    public ParticleSystem explosioParticleSystem;
     void Start()
     {
         Destroy(gameObject, drawingProperties.lifeTime);
@@ -98,6 +98,9 @@ public class DrawnMesh : MonoBehaviour
                         player.GetComponent<PlayerController>().TakeDamage(null, null, drawingProperties.damage);
                         player.GetComponent<PlayerController>().TakeKB(null,transform ,drawingProperties.knockBack);
                     }
+                    ParticleSystem particleSystem =  Instantiate(explosioParticleSystem, transform.position, Quaternion.identity);
+                    Destroy(particleSystem, 5); // destroy particle 
+                    
                     exploded = true;
                 }
             }

@@ -15,9 +15,10 @@ public class PainterCharacter : PlayerController
     private int lastDirectionIndex;
     [SerializeField] private int propertyIndex;
     
-    [Header("SmokeScreen Data")]
+    [Header("Particles")]
     [SerializeField] private ParticleSystem smokeScreenParticle;
-
+    [SerializeField] private ParticleSystem explosieParticle;
+    
     [Header("Drawing Logic")] private List<GameObject> generatedObjects = new List<GameObject>();
 
     [SerializeField] private GameObject cursor;
@@ -344,6 +345,7 @@ public class PainterCharacter : PlayerController
         drawingObject.AddComponent<DrawnMesh>();
         drawingObject.GetComponent<DrawnMesh>().drawingProperties = drawingProperties[propertyIndex];
         drawingObject.GetComponent<DrawnMesh>().smokeParticleSystem = smokeScreenParticle;
+        drawingObject.GetComponent<DrawnMesh>().explosioParticleSystem = explosieParticle;
         
         // Set material
         meshRenderer.material = drawingProperties[propertyIndex].mainMaterial;

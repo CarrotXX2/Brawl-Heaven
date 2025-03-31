@@ -16,17 +16,17 @@ MonoBehaviour:
   animation: {fileID: -6842065629840424104, guid: 8b825605a771d894c9b7ab866fdccc42,
     type: 3}
   chargeAnimation: {fileID: 0}
-  damage: 8
+  damage: 4
   chargeAttack: 0
   minChargeDamage: 0
   maxChargeDamage: 0
   maxChargeTime: 0
-  knockback: 12
+  knockback: 10
   minKnockback: 5
   hitDirection: {x: 0.25, y: 0.6}
   unstoppable: 0
   hitStun: 0
-  startupTime: 0.5
+  startupTime: 0.1
   activeTime: 1.1
   moveCooldown: 0
   moveOnAttack: 0

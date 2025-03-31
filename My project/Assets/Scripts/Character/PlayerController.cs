@@ -88,13 +88,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     private float minKnockback;
     private bool isBeingKnocked = false;
-    private float knockbackEndTime;
-    
     
     private Vector2 knockbackDirection; // The ammount of force that should be applied on both axis from 0 to 1 
     private Vector2 knockbackVelocity; 
-   
-
+    
     [Header("Attack Logic")] 
     [SerializeField] private LayerMask player;
     private Coroutine attackCoroutine; // Variable to hold the attack coroutine so it can be cancelled
@@ -139,7 +136,11 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     [SerializeField] private float respawnTime;
     public bool touchedDeathZone;
-
+    
+    [Header("Particles")]
+    [SerializeField] private ParticleSystem launchedParticles;
+    
+    
     [Header("Camera Control")] // Need to change camera logic 
     [SerializeField] private float cameraFollowWeight;
     [SerializeField] private float cameraFollowRadius;
@@ -156,6 +157,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("Animator Reference")]
     protected Animator animator;
+    
+    
     
     #endregion
     
@@ -270,9 +273,10 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     }
 
     private bool CanMove()
-    {
+    {   
+        // attackType 1 are heavy attacks, cant move while using/performing them 
         if (isCharging || attackType[1] || combatState == CombatState.Blocking || combatState == CombatState.HitStun 
-            || movementState == MovementState.Launched || isBeingKnocked)
+            || movementState == MovementState.Launched || isBeingKnocked) 
         {
             return false;
         }
@@ -328,9 +332,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             case MovementState.Launched:
                 // Can't jump
                 break;
-            
             default:
-                if (jumpsLeft > 0 && ctx.performed)
+                if (jumpsLeft > 0 && ctx.performed && combatState == CombatState.Attacking)
+                {
+                    jumpsLeft--;
+                    
+                    rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+                }
+                else if (jumpsLeft > 0 && ctx.performed)
                 {
                     jumpsLeft--;
                     
@@ -338,7 +347,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                     
                     rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
                 }
-
                 break;
             
         }
@@ -434,7 +442,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private bool CanPerformAction()
     {
         return !(HasState(MovementState.Dashing) || HasState(MovementState.Launched) ||
-                 HasState(CombatState.HitStun) || HasState(CombatState.Attacking) ||
                  HasState(CombatState.Blocking) || touchedDeathZone);
     }
     private void OnCollisionEnter(Collision collision) // Having both a ray and collision detection helps for easier walljump implementation with certain objects
@@ -630,12 +637,13 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             if (collider.enabled == false)
             {
+                 DetectChargedHits(attackData, chargedDamage ,collider);
                 collider.enabled = true;
             }
-            
-            DetectChargedHits(attackData, chargedDamage ,collider);
         }
-
+        
+        yield return null;
+        
         yield return new WaitForSeconds(attackData.activeTime);
 
         for (int i = 0; i < colliders.Length; i++)
@@ -654,11 +662,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     private void DetectHits(AttackData attackData, Collider attackCollider)
     {
-        // Create a HashSet to track unique hit targets
-        HashSet<GameObject> hitTargets = new HashSet<GameObject>();
+        attackCollider.gameObject.GetComponent<AttackColliders>().attackData = attackData;
+        // attackCollider.enabled = true;
         
+        /* // Create a HashSet to track unique hit targets
+        HashSet<GameObject> hitTargets = new HashSet<GameObject>();
+
         // Corrected size calculation to ensure full detection
-        Vector3 boxSize = attackCollider.bounds.size; 
+        Vector3 boxSize = attackCollider.bounds.size;
 
         Collider[] hitObjects = Physics.OverlapBox(
             attackCollider.bounds.center,
@@ -670,23 +681,27 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         foreach (var hit in hitObjects)
         {
             IDamageable damageable = hit.GetComponent<IDamageable>();
-            
+
             // Ignore self
             if (hit.gameObject == gameObject) continue;
-            
+
             if (hitTargets.Contains(hit.gameObject)) continue;
-            
+
             if (damageable != null)
             {
                 damageable.TakeDamage(attackData, transform, attackData.damage);
-                
+
                 hitTargets.Add(hit.gameObject);
             }
-        }
+        }*/
     }
     
     private void DetectChargedHits(AttackData attackData, float damage, Collider attackCollider)
     {
+        
+        attackCollider.gameObject.GetComponent<AttackColliders>().attackData = attackData;
+        attackCollider.enabled = true;
+        /*
         // Create a HashSet to track unique hit targets
         HashSet<GameObject> hitTargets = new HashSet<GameObject>();
         
@@ -713,7 +728,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 
                 hitTargets.Add(hit.gameObject);
             }
-        }
+        }*/
     }
 
     private void CancelAttack() // Cancel attack when certain interactions are met
@@ -902,7 +917,6 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
         // Set knockback state
         movementState = MovementState.Launched;
         isBeingKnocked = true;
-        knockbackEndTime = Time.time + (knockbackIntensity * knockbackDurationFactor);
 
         // Clear any current velocity before applying knockback
         rb.velocity = Vector3.zero;
@@ -942,8 +956,7 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
     private bool CanAttack()
     {
         if (movementState == MovementState.Grounded && combatState == CombatState.Neutral ||
-            movementState == MovementState.InAir && combatState == CombatState.Neutral || combatState == CombatState.Attacking
-            || combatState == CombatState.Blocking)
+            movementState == MovementState.InAir && combatState == CombatState.Neutral || combatState == CombatState.Blocking)
         {
             return true;
         }
@@ -1091,14 +1104,14 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
 
     #endregion
 
-    #region Other Inputs
+    #region Other Inputs 
 
     public virtual void OnRightAnalogStickMove(InputAction.CallbackContext ctx)
     {
       
     }
 
-    #endregion
+    #endregion 
 
     #region Animator
 
