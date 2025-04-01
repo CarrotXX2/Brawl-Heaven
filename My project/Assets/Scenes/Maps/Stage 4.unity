@@ -2376,7 +2376,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -6918,15 +6918,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0406f567cab7bec4cbd63c9e588291a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
-  detectionInterval: 0.2
-  damageTextTemplate: {fileID: 8219653016074912297}
-  textOffsetY: 2
-  numberChangeDuration: 0.4
-  shakeIntensity: 5
-  stockIconPrefab: {fileID: 313469856}
-  stockIconSpacing: 0.5
-  stockFadeDuration: 0.3
+  safeColor: {r: 1, g: 1, b: 1, a: 1}
+  warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  dangerColor: {r: 1, g: 0, b: 0, a: 1}
+  criticalColor: {r: 0.5, g: 0, b: 0, a: 1}
+  warningThreshold: 30
+  dangerThreshold: 70
+  criticalThreshold: 100
+  countUpSpeed: 100
+  baseShakeDuration: 0.3
+  baseShakeIntensity: 15
+  damageAmount: 50
+  startCountUp: 0
 --- !u!224 &9144140228413964295
 RectTransform:
   m_ObjectHideFlags: 0

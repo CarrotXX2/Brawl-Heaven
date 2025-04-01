@@ -33,7 +33,8 @@ Material:
     - _QueueOffset: 15
     m_Colors:
     - _BackgroundColor: {r: 0.6415094, g: 0.17853329, b: 0.17853329, a: 0}
-    - _TimerColor: {r: 6.4150944, g: 1.2271699, b: 0, a: 0}
+    - _TimerColor: {r: 2.4603772, g: 0.16753413, b: 0, a: 0}
+    - _Vector2: {r: 0.36, g: 0.4, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &5258721502289262890
 MonoBehaviour:
