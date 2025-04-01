@@ -63,6 +63,11 @@ public class Player : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
     private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
         GameplayManager gameplayManager = GameplayManager.Instance;
