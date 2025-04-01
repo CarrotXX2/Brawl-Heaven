@@ -20,7 +20,7 @@ MonoBehaviour:
   mainMaterial: {fileID: 2100000, guid: 3dd4c20228c0a0e4db8992c862b3d3ce, type: 2}
   backGroundMaterial: {fileID: 2100000, guid: 1c71752704aa88b4081b1149055c1f28, type: 2}
   healingAmount: 5
-  healingInterval: 1
+  healingInterval: 1.75
   pullForce: 0
   damage: 0
   knockBack: 0

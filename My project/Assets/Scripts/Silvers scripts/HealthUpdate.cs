@@ -4,6 +4,7 @@ using System.Collections;
 
 public class EnhancedDamageDisplay : MonoBehaviour
 {
+    private int playerID;
     [Header("Color Settings")]
     public Color safeColor = Color.white;
     public Color warningColor = Color.yellow;
@@ -33,6 +34,11 @@ public class EnhancedDamageDisplay : MonoBehaviour
         originalTextPosition = damageText.transform.localPosition;
         currentDisplayDamage = 0;
         UpdateText();
+    }
+
+    public void SetPlayerIndex(int playerIndex)
+    {
+        playerIndex = playerIndex;
     }
 
     private void Update()

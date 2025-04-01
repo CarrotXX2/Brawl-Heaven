@@ -24,11 +24,11 @@ MonoBehaviour:
   maxChargeTime: 4
   knockback: 35
   minKnockback: 2
-  hitDirection: {x: 1, y: 0.4}
+  hitDirection: {x: 1, y: 0.8}
   unstoppable: 0
   hitStun: 0
   startupTime: 0.8
-  activeTime: 13.75
+  activeTime: 2
   moveCooldown: 0
   moveOnAttack: 0
   movementDirection: {x: 0, y: 0}

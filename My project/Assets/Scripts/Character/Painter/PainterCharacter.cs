@@ -15,7 +15,7 @@ public class PainterCharacter : PlayerController
     private int lastDirectionIndex;
     [SerializeField] private int propertyIndex;
     
-    [Header("Particles")]
+    [Header("Character Specific Particles")]
     [SerializeField] private ParticleSystem smokeScreenParticle;
     [SerializeField] private ParticleSystem explosieParticle;
     
@@ -40,7 +40,6 @@ public class PainterCharacter : PlayerController
     [Header("Property Selection")]
     [SerializeField] private float height; // How high the wheel floats above the player
     [SerializeField] private GameObject propertyWheel;
-    [SerializeField] private GameObject propertyWheelInstance;
     [SerializeField] private GameObject arrow;
     
     [Space] private bool usingUltimate = false;
@@ -79,6 +78,7 @@ public class PainterCharacter : PlayerController
         if (usingUltimate && !startDrawing)
         {
             startDrawing = true;
+            cursorInstance.GetComponent<Cursor>().ActivateParticle();
             ultimateCast = StartCoroutine(UltimateCoroutine());
             return;
         }
@@ -90,9 +90,10 @@ public class PainterCharacter : PlayerController
         Debug.Log("Cast Ultimate");
 
         // Instantiate cursor and Property wheel at player position (including Z coordinate)
-        if (!cursorInstance && !propertyWheelInstance)
+        if (!cursorInstance)
         {
             cursorPosition = playerTransform.position;
+            propertyWheel.SetActive(true);
             cursorInstance = Instantiate(cursor, playerTransform.position, Quaternion.identity);
         }
 
@@ -126,6 +127,8 @@ public class PainterCharacter : PlayerController
         }
 
         Destroy(cursorInstance);
+        
+        propertyWheel.SetActive(false);
         cursorInstance = null;
         rb.isKinematic = false;
         usingUltimate = false;

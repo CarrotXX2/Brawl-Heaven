@@ -18,6 +18,7 @@ public class GameplayManager : MonoBehaviour
     
     [Header("UI Panels")]
     [SerializeField] private GameObject playerWinPanel;
+    [SerializeField] private GameObject ingameUI;
     
     [Header("Drawing management")]
     public List<PolygonCollider2D> drawings = new List<PolygonCollider2D>(); // Keeps track of every current drawing/ultimate on the field
@@ -31,6 +32,11 @@ public class GameplayManager : MonoBehaviour
     private void Start()
     {
        Invoke("SpawnPlayers", 3);
+       
+       foreach (GameObject player in players)
+       {
+           player.GetComponent<PlayerController>().SetPlayerIngameUI();
+       }
     }
     
     public void SpawnPlayers()
@@ -41,6 +47,15 @@ public class GameplayManager : MonoBehaviour
             players[i].transform.position = startSpawnPoints[i].position;
             
             print($"Player {i} spawned");
+        }
+    }
+
+    private void SetUI()
+    {
+        ingameUI.SetActive(true);
+        for (int i = 0; i < players.Count; i++)
+        {
+           // ingameUI.;
         }
     }
     public IEnumerator RespawnPlayer(GameObject player)

@@ -11,40 +11,39 @@ public class AttackColliders : MonoBehaviour
    {
       if (isHeavyAttack)
       {
-         HashSet<GameObject> hitTargets = new HashSet<GameObject>();
+         //HashSet<GameObject> hitTargets = new HashSet<GameObject>();
                
          IDamageable damageable = other.gameObject.GetComponent<IDamageable>();
                      
          // Ignore self
          if (other.transform.IsChildOf(transform.parent)) return;
                      
-         if (hitTargets.Contains(other.gameObject)) return;
+         // if (hitTargets.Contains(other.gameObject)) return;
                      
          if (damageable != null)
          {
-            damageable.TakeDamage(attackData, transform, chargedDamage);
+            damageable.TakeDamage(attackData, transform.parent, chargedDamage);
                          
-            hitTargets.Add(other.gameObject);
+            // hitTargets.Add(other.gameObject);
          }
       }
       else
       {
-         HashSet<GameObject> hitTargets = new HashSet<GameObject>();
+         // HashSet<GameObject> hitTargets = new HashSet<GameObject>();
 
          IDamageable damageable = other.gameObject.GetComponent<IDamageable>();
 
          // Ignore self
          if (other.transform.IsChildOf(transform.parent)) return;
 
-         if (hitTargets.Contains(other.gameObject)) return;
+         // if (hitTargets.Contains(other.gameObject)) return;
 
          if (damageable != null)
          {
-            damageable.TakeDamage(attackData, transform, attackData.damage);
+            damageable.TakeDamage(attackData, transform.parent, attackData.damage);
 
-            hitTargets.Add(other.gameObject);
+            // hitTargets.Add(other.gameObject);
          }
       }
-
    }
 }

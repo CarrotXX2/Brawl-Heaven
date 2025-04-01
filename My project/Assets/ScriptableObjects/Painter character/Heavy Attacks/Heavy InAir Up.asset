@@ -32,4 +32,4 @@ MonoBehaviour:
   moveCooldown: 0
   moveOnAttack: 1
   movementDirection: {x: 0, y: 10}
-  moveForce: 20
+  moveForce: 30

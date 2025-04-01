@@ -97,10 +97,13 @@ public class DrawnMesh : MonoBehaviour
                         // The functions more modular 
                         player.GetComponent<PlayerController>().TakeDamage(null, null, drawingProperties.damage);
                         player.GetComponent<PlayerController>().TakeKB(null,transform ,drawingProperties.knockBack);
+                        
+                        // Play/spawn particle
+                        ParticleSystem particleSystem =  Instantiate(explosioParticleSystem, player.transform.position, Quaternion.identity);
+                        Destroy(particleSystem, 5); // destroy particle 
                     }
-                    ParticleSystem particleSystem =  Instantiate(explosioParticleSystem, transform.position, Quaternion.identity);
-                    Destroy(particleSystem, 5); // destroy particle 
-                    
+
+                    Instantiate(explosioParticleSystem, transform.position, Quaternion.identity);
                     exploded = true;
                 }
             }

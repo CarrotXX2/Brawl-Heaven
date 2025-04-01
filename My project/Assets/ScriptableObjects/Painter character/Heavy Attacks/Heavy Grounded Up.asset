@@ -27,9 +27,9 @@ MonoBehaviour:
   hitDirection: {x: 0, y: 1}
   unstoppable: 0
   hitStun: 0.2
-  startupTime: 0.3
+  startupTime: 0.2
   activeTime: 0.9
   moveCooldown: 0
   moveOnAttack: 1
   movementDirection: {x: 0, y: 10}
-  moveForce: 20
+  moveForce: 30

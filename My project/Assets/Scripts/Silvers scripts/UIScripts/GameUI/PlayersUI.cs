@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerUIManager : MonoBehaviour
@@ -6,23 +7,23 @@ public class PlayerUIManager : MonoBehaviour
     public GameObject layout2Players;
     public GameObject layout3Players;
     public GameObject layout4Players;
-
-    [Header("Player UI References")]
-    public GameObject p1UI;
-    public GameObject p2UI;
-    public GameObject p3UI;
-    public GameObject p4UI;
-
+    
+    [Header("UI Prefab")]
+    public GameObject playerUIPrefab; // The UI prefab to instantiate for each player
+    
     [Header("Test Mode Settings")]
     public bool useTestMode = false;
     [Range(1, 4)] public int testPlayerCount = 2;
     public KeyCode testRefreshKey = KeyCode.R;
-
+    
+    // Dictionary to track instantiated UI elements by player ID
+    private Dictionary<int, GameObject> playerUIInstances = new Dictionary<int, GameObject>();
+    
     void Start()
     {
         UpdatePlayerUI();
     }
-
+    
     void Update()
     {
         if (useTestMode && Input.GetKeyDown(testRefreshKey))
@@ -30,35 +31,75 @@ public class PlayerUIManager : MonoBehaviour
             UpdatePlayerUI();
         }
     }
-
+    
     public void UpdatePlayerUI()
     {
+        // Clean up any existing UI elements
+        ClearPlayerUI();
+        
         int playerCount = GetPlayerCount();
-        SetAllUIActive(false);
         SetAllLayoutsActive(false);
-
-        if (playerCount == 1)
+        
+        if (playerCount <= 0) return;
+        
+        GameObject activeLayout;
+        if (playerCount == 1 || playerCount == 2)
         {
-            layout2Players.SetActive(true);
-            p1UI.SetActive(true);
-            PositionUIElement(p1UI, "Pos1", layout2Players);
-            return;
+            activeLayout = layout2Players;
         }
-
-        switch (playerCount)
+        else if (playerCount == 3)
         {
-            case 2:
-                ActivateLayout(layout2Players, 2);
-                break;
-            case 3:
-                ActivateLayout(layout3Players, 3);
-                break;
-            case 4:
-                ActivateLayout(layout4Players, 4);
-                break;
+            activeLayout = layout3Players;
+        }
+        else
+        {
+            activeLayout = layout4Players;
+        }
+        
+        if (activeLayout == null) return;
+        
+        activeLayout.SetActive(true);
+        
+        // Create UI for each player
+        for (int i = 1; i <= playerCount; i++)
+        {
+            CreatePlayerUI(i, activeLayout);
         }
     }
-
+    
+    private void CreatePlayerUI(int playerIndex, GameObject layout)
+    {
+        if (playerUIPrefab == null || layout == null) return;
+        
+        Transform posTransform = layout.transform.Find("Pos" + playerIndex);
+        if (posTransform == null) return;
+        
+        GameObject uiInstance = Instantiate(playerUIPrefab, posTransform.position, posTransform.rotation);
+        uiInstance.name = "PlayerUI_" + playerIndex;
+        
+        // You can set up any player-specific UI customization here
+        EnhancedDamageDisplay playerUI = uiInstance.GetComponent<EnhancedDamageDisplay>();
+        if (playerUI != null)
+        {
+            playerUI.SetPlayerIndex(playerIndex);
+        }
+        
+        // Store reference to UI in dictionary
+        playerUIInstances[playerIndex] = uiInstance;
+    }
+    
+    private void ClearPlayerUI()
+    {
+        foreach (var uiInstance in playerUIInstances.Values)
+        {
+            if (uiInstance != null)
+            {
+                Destroy(uiInstance);
+            }
+        }
+        playerUIInstances.Clear();
+    }
+    
     int GetPlayerCount()
     {
         if (useTestMode)
@@ -67,65 +108,26 @@ public class PlayerUIManager : MonoBehaviour
         }
         else
         {
-            return GameplayManager.Instance != null && GameplayManager.Instance.playersAlive != null
-                ? GameplayManager.Instance.playersAlive.Count
+            return GameplayManager.Instance != null && GameplayManager.Instance.players != null
+                ? GameplayManager.Instance.players.Count
                 : 0;
         }
     }
-
-    void SetAllUIActive(bool active)
-    {
-        if (p1UI != null) p1UI.SetActive(active);
-        if (p2UI != null) p2UI.SetActive(active);
-        if (p3UI != null) p3UI.SetActive(active);
-        if (p4UI != null) p4UI.SetActive(active);
-    }
-
+    
     void SetAllLayoutsActive(bool active)
     {
         if (layout2Players != null) layout2Players.SetActive(active);
         if (layout3Players != null) layout3Players.SetActive(active);
         if (layout4Players != null) layout4Players.SetActive(active);
     }
-
-    void ActivateLayout(GameObject layout, int playerCount)
+    
+    // Method to get a player's UI instance
+    public GameObject GetPlayerUI(int playerIndex)
     {
-        if (layout == null) return;
-
-        layout.SetActive(true);
-
-        for (int i = 1; i <= playerCount; i++)
+        if (playerUIInstances.TryGetValue(playerIndex, out GameObject ui))
         {
-            GameObject uiElement = GetUIElement(i);
-            if (uiElement != null)
-            {
-                uiElement.SetActive(true);
-                PositionUIElement(uiElement, "Pos" + i, layout);
-            }
+            return ui;
         }
-    }
-
-    GameObject GetUIElement(int playerIndex)
-    {
-        switch (playerIndex)
-        {
-            case 1: return p1UI;
-            case 2: return p2UI;
-            case 3: return p3UI;
-            case 4: return p4UI;
-            default: return null;
-        }
-    }
-
-    void PositionUIElement(GameObject uiElement, string positionName, GameObject layout)
-    {
-        if (uiElement == null || layout == null) return;
-
-        Transform posTransform = layout.transform.Find(positionName);
-        if (posTransform != null)
-        {
-            uiElement.transform.position = posTransform.position;
-            uiElement.transform.rotation = posTransform.rotation;
-        }
+        return null;
     }
 }

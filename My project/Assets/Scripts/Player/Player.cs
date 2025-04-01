@@ -28,7 +28,10 @@ public class Player : MonoBehaviour
     private Mouse virtualMouse; // Virtual mouse instance
     private Vector2 cursorPosition;
     private Gamepad gamepad; // Reference to player's gamepad
-
+    
+    [Header("UI References")]
+    [SerializeField] private GameObject[] playerIngameUIArray;
+    public GameObject currentPlayerIngameUI;
     [Header("Component References")]
     private Canvas canvas;
 
@@ -47,6 +50,8 @@ public class Player : MonoBehaviour
         {
             OnCharacterSelectStart();
         }
+        
+        currentPlayerIngameUI = playerIngameUIArray[playerID];
     }
     void OnEnable()
     {

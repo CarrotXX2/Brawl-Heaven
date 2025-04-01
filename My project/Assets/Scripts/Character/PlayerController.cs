@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Player in game Stats")] 
     [SerializeField] private float totalDamageTaken;
     [SerializeField] private int stocks;
+    [SerializeField] private GameObject playerIngameUI;
     
     [Header("Player Core")]
     [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
@@ -77,13 +78,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("LedgeGrab Check")]
     [SerializeField] private LayerMask ledgeLayer;
-   
     
     [Header("Launch Logic")] 
     [SerializeField] private int weight; // Weight determines the players knockback, heavier weight less knockback
     [SerializeField] private float knockbackReduceSpeed; // Controls how quickly knockback slows down
     [SerializeField] private float knockbackDurationFactor;
-
+    
     [SerializeField] private float velocityMganitude; // 
     
     private float minKnockback;
@@ -139,7 +139,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("Particles")]
     [SerializeField] private ParticleSystem launchedParticles;
-    
+    [SerializeField] private ParticleSystem deathParticles;
+    [SerializeField] private ParticleSystem healParticle;
     
     [Header("Camera Control")] // Need to change camera logic 
     [SerializeField] private float cameraFollowWeight;
@@ -157,8 +158,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     [Header("Animator Reference")]
     protected Animator animator;
-    
-    
     
     #endregion
     
@@ -262,7 +261,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 velocity.x = moveInput.x * (isSprinting ? movementSpeed * sprintMultiplier : movementSpeed);
                 rb.velocity = velocity;
 
-                if (Mathf.Abs(moveInput.x) > deadZoneThreshold)
+                if (Mathf.Abs(moveInput.x) > deadZoneThreshold && combatState != CombatState.Attacking)
                 {
                     transform.rotation = Quaternion.LookRotation(new Vector3(moveInput.x, 0, 0));
                 }
@@ -637,7 +636,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             if (collider.enabled == false)
             {
-                 DetectChargedHits(attackData, chargedDamage ,collider);
+                DetectChargedHits(attackData, chargedDamage ,collider);
                 collider.enabled = true;
             }
         }
@@ -663,72 +662,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void DetectHits(AttackData attackData, Collider attackCollider)
     {
         attackCollider.gameObject.GetComponent<AttackColliders>().attackData = attackData;
-        // attackCollider.enabled = true;
-        
-        /* // Create a HashSet to track unique hit targets
-        HashSet<GameObject> hitTargets = new HashSet<GameObject>();
-
-        // Corrected size calculation to ensure full detection
-        Vector3 boxSize = attackCollider.bounds.size;
-
-        Collider[] hitObjects = Physics.OverlapBox(
-            attackCollider.bounds.center,
-            boxSize,
-            attackCollider.transform.rotation,
-            player
-        );
-
-        foreach (var hit in hitObjects)
-        {
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-
-            // Ignore self
-            if (hit.gameObject == gameObject) continue;
-
-            if (hitTargets.Contains(hit.gameObject)) continue;
-
-            if (damageable != null)
-            {
-                damageable.TakeDamage(attackData, transform, attackData.damage);
-
-                hitTargets.Add(hit.gameObject);
-            }
-        }*/
     }
     
     private void DetectChargedHits(AttackData attackData, float damage, Collider attackCollider)
     {
-        
         attackCollider.gameObject.GetComponent<AttackColliders>().attackData = attackData;
-        attackCollider.enabled = true;
-        /*
-        // Create a HashSet to track unique hit targets
-        HashSet<GameObject> hitTargets = new HashSet<GameObject>();
-        
-        // Corrected size calculation to ensure full detection
-        Vector3 boxSize = attackCollider.bounds.size; 
-        Collider[] hitObjects = Physics.OverlapBox(
-            attackCollider.bounds.center,
-            boxSize,
-            attackCollider.transform.rotation, player
-        );
-
-        foreach (var hit in hitObjects)
-        {
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-            
-            // Ignore self
-            if (hit.gameObject == gameObject) continue;
-
-            if (hitTargets.Contains(hit.gameObject)) continue;
-            
-            if (damageable != null)
-            {
-                damageable.TakeDamage(attackData, damage ,transform);
-                
-                hitTargets.Add(hit.gameObject);
-            }
-        }*/
+        attackCollider.gameObject.GetComponent<AttackColliders>().chargedDamage = damage;
     }
 
     private void CancelAttack() // Cancel attack when certain interactions are met
@@ -750,7 +689,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                     totalDamageTaken += damage;
                     
                     TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
-                    // StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
+                   
+                    playerIngameUI.GetComponent<EnhancedDamageDisplay>().UpdateDamage(totalDamageTaken);
                 }
                 else // Explosion damage
                 {
@@ -785,86 +725,11 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     public void Heal(int healAmount)
     {
         totalDamageTaken -= healAmount;
-    }
-    /*
-    private void UpdateKnockback()
-{
-    if (isBeingKnocked)
-    {
-        if (Time.time >= knockbackEndTime)
-        {
-            // Smoothly reset knockback state
-            isBeingKnocked = false;
-            rb.velocity = Vector3.zero;
-            movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
-            return;
-        }
-
-        movementState = MovementState.Launched;
-
-        // More gradual velocity reduction
-        Vector3 currentVelocity = rb.velocity;
+        totalDamageTaken = Mathf.Clamp(totalDamageTaken, 0, Mathf.Infinity);
         
-        // Reduce horizontal velocity more gradually
-        currentVelocity.x = Mathf.Lerp(currentVelocity.x, 0, Time.deltaTime * knockbackReduceSpeed);
-
-        // Add slight air control during knockback
-        float horizontalInput = Mathf.Abs(moveInput.x);
-        if (horizontalInput > deadZoneThreshold)
-        {
-            // Slight directional influence during knockback
-            float influence = 0.2f; // Adjust this value to control air control
-            currentVelocity.x += moveInput.x * influence;
-        }
-
-        // Ensure vertical movement is still gravity-affected
-        currentVelocity.y = rb.velocity.y;
-
-        rb.velocity = currentVelocity;
+        healParticle.Play();
+        playerIngameUI.GetComponent<EnhancedDamageDisplay>().UpdateDamage(totalDamageTaken);
     }
-}
-
-public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float kb)
-{
-    if (attackData)
-    {
-        minKnockback = attackData.minKnockback;
-        knockbackDirection = attackData.hitDirection;
-    }
-    else
-    {
-        minKnockback = 0;
-        knockbackDirection = Vector2.one;
-    }
-    
-    float knockbackIntensity = (
-        ((totalDamageTaken / 100) * kb * (200 / (weight + 100)) + minKnockback));
-
-    // Get base direction from attacker to target
-    Vector3 baseDirection = (transform.position - kbSource.position).normalized;
-
-    // Use the attack's hit direction with more dynamic trajectory
-    Vector2 finalDirection = new Vector2(Mathf.Sign(baseDirection.x) * Mathf.Abs(knockbackDirection.x), knockbackDirection.y);
-    
-    print(finalDirection);
-    // More gradual knockback application
-    knockbackVelocity = finalDirection * knockbackIntensity;
-
-    // Set extended knockback state
-    movementState = MovementState.Launched;
-    isBeingKnocked = true;
-    knockbackEndTime = Time.time + (knockbackIntensity * knockbackDurationFactor * 1.2f); // Slightly longer duration
-
-    // Clear velocity with more controlled approach
-    rb.velocity = Vector3.zero;
-
-    // Apply initial impulse with more subtle application
-    rb.AddForce(knockbackVelocity * 0.5f, ForceMode.Impulse);
-    rb.AddForce(knockbackVelocity * 0.5f, ForceMode.Acceleration); // Gradual additional force
-
-    Debug.Log($"Smash-Style Knockback - Intensity: {knockbackIntensity}, Direction: {knockbackVelocity}");
-}
-*/
     
     private void UpdateKnockback()
     {
@@ -875,9 +740,15 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
                 // Reset knockback state more comprehensively
                 isBeingKnocked = false;
                 movementState = IsGrounded() ? MovementState.Grounded : MovementState.InAir;
+                launchedParticles.gameObject.SetActive(false);
                 return;
             }
             movementState = MovementState.Launched;
+            if (!launchedParticles.gameObject.activeInHierarchy)
+            {
+                 launchedParticles.gameObject.SetActive(true);
+            }
+            
             // Gradually reduce knockback with a more controlled approach
             knockbackVelocity *= knockbackReduceSpeed;
             rb.velocity = new Vector3(knockbackVelocity.x, knockbackVelocity.y, 0);
@@ -898,7 +769,7 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
             knockbackDirection = Vector2.one;
         }
 
-        // More precise knockback calculation
+        // Formula for knockback intensity 
         float knockbackIntensity = (((totalDamageTaken / 100) * kb * (200 / (weight + 100)) + minKnockback));
 
         // Get base direction from attacker to target
@@ -927,7 +798,8 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
         // Additional debug logging
         Debug.Log($"Knockback Applied - Intensity: {knockbackIntensity}, Direction: {knockbackVelocity}");
     } 
-
+    
+    // No need anymore
     private IEnumerator ApplyHitStun(AttackData attackData)
     {
         combatState = CombatState.HitStun;
@@ -1054,6 +926,7 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
         
 
     #endregion
+    
     #region Death
 
     private void OnTriggerEnter(Collider other) // When you hit the outer borders the player should die 
@@ -1065,10 +938,29 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
                 touchedDeathZone = true;
                 knockbackVelocity = Vector2.zero;
                 rb.velocity = Vector2.zero;
+            
+                // Get the closest point on the border collider to the player
+                Vector3 closestPoint = other.ClosestPoint(transform.position);
+            
+                // Calculate direction from the border to the player (this is the normal)
+                Vector3 collisionNormal = (transform.position - closestPoint).normalized;
+            
+                // Calculate rotation based on the normal
+                Quaternion particleRotation = Quaternion.LookRotation(collisionNormal);
+            
+                // Calculate a position closer to the collision point
+                // Adjust the multiplier (0.25f) to control how close to the border the effect appears
+                Vector3 spawnPosition = closestPoint + collisionNormal * 0.25f;
+            
+                // Instantiate death particle with the calculated rotation and adjusted position
+                ParticleSystem deathParticle = Instantiate(deathParticles, spawnPosition, particleRotation);
+                Destroy(deathParticle, 10);
                 OnStockLost();
             }
         }
     }
+    
+    
     private void OnStockLost()
     {
         // play particle and death sound
@@ -1208,10 +1100,11 @@ public void TakeKB([CanBeNull] AttackData attackData, Transform kbSource, float 
     #endregion
 
     #region UI Logic
-    private void ChangeUI()
+    public void SetPlayerIngameUI()
     {
-       
+       playerIngameUI = gameObject.transform.parent.gameObject.GetComponent<Player>().currentPlayerIngameUI;
     }
+    
     #endregion
    
 
