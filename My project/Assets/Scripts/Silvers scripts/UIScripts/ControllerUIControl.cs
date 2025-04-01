@@ -18,6 +18,15 @@ public class ControllerUIControl : MonoBehaviour
         instance = this;
     }
 
+    public void Update()
+    {
+       /* if (Input.GetKeyDown(KeyCode.T))
+        {
+            print("Test");
+            OpenCharacterSelect();
+        }*/
+    }
+
     // Start is called before the first frame update
     public void StartButton()
     {
@@ -30,6 +39,7 @@ public class ControllerUIControl : MonoBehaviour
     public void OpenCharacterSelect()
     {
         characterSelect = true;
+        
         foreach (Player player in PlayerManager.Instance.players)
         {
             player.OnCharacterSelectStart();

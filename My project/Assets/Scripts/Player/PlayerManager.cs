@@ -27,15 +27,7 @@ public class PlayerManager : MonoBehaviour
 
         players.Add(player.GetComponent<Player>());
     }
-
-    public void CharacterSelection()
-    {
-        foreach (var player in players)
-        {
-            player.OnCharacterSelectStart();
-        }
-    }
-
+    
     public void RemovePlayer(int playerID)
     {
         players.RemoveAt(playerID);

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum Property
@@ -12,7 +10,7 @@ public enum Property
 [CreateAssetMenu(fileName = "DrawingProperties", menuName = "ScriptableObjects/DrawingProperties", order = 1)]
 public class DrawingProperties : ScriptableObject
 {
-    public string name; // Name of property 
+    public string propertyName; // Name of property 
     public Property property;
     
     [Header("Logic")]

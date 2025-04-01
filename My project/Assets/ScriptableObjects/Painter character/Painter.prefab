@@ -154,6 +154,31 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2353170362078571857}
     m_Modifications:
+    - target: {fileID: 976428680810205679, guid: 1703ea4bdc0888948b5a4cc9f36e2b0d,
+        type: 3}
+      propertyPath: InitialModule.size3D
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 976428680810205679, guid: 1703ea4bdc0888948b5a4cc9f36e2b0d,
+        type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 976428680810205679, guid: 1703ea4bdc0888948b5a4cc9f36e2b0d,
+        type: 3}
+      propertyPath: InitialModule.startSizeY.scalar
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 976428680810205679, guid: 1703ea4bdc0888948b5a4cc9f36e2b0d,
+        type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.81
+      objectReference: {fileID: 0}
+    - target: {fileID: 976428680810205679, guid: 1703ea4bdc0888948b5a4cc9f36e2b0d,
+        type: 3}
+      propertyPath: InitialModule.startSizeY.minScalar
+      value: 0.97
+      objectReference: {fileID: 0}
     - target: {fileID: 1150202381983516859, guid: 1703ea4bdc0888948b5a4cc9f36e2b0d,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2327,9 +2352,9 @@ MonoBehaviour:
   inAirDrag: 1.5
   ultimateDuration: 5
   drawingProperties:
+  - {fileID: 11400000, guid: 87e08425be32a39439e822ac9ea0f2e3, type: 2}
   - {fileID: 11400000, guid: 603661e25ccebc64f81f03e5694cde24, type: 2}
   - {fileID: 11400000, guid: f6679816f363a3a49b77e6f0228c6f07, type: 2}
-  - {fileID: 11400000, guid: 87e08425be32a39439e822ac9ea0f2e3, type: 2}
   - {fileID: 11400000, guid: 7e57e73db0d3aec4d9f16481a003aa68, type: 2}
   propertyIndex: 0
   smokeScreenParticle: {fileID: 1668442383938394467, guid: 9a64dba3dd6ae704990ba8a2b97debfe,
@@ -2345,7 +2370,6 @@ MonoBehaviour:
   closeLoopThreshold: 1
   height: 0
   propertyWheel: {fileID: 2669863478799655899}
-  propertyWheelInstance: {fileID: 0}
   arrow: {fileID: 2144817455726143282}
 --- !u!1 &8782839604776821483 stripped
 GameObject:

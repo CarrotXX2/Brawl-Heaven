@@ -38,7 +38,7 @@ public class EnhancedDamageDisplay : MonoBehaviour
 
     public void SetPlayerIndex(int playerIndex)
     {
-        playerIndex = playerIndex;
+        playerID = playerIndex;
     }
 
     private void Update()

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -50,8 +49,8 @@ public class Player : MonoBehaviour
         {
             OnCharacterSelectStart();
         }
-        
-        currentPlayerIngameUI = playerIngameUIArray[playerID];
+
+    
     }
     void OnEnable()
     {
@@ -75,6 +74,11 @@ public class Player : MonoBehaviour
         if (gameplayManager != null)
         {
             gameObject.GetComponentInChildren<PlayerController>(true).GameStartSetup();
+        }
+
+        if (playerController)
+        {
+            playerController.playerIngameUI = playerIngameUIArray[playerID];
         }
     }
     #region Character Selection

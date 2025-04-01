@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Debug = UnityEngine.Debug;
@@ -37,7 +36,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Player in game Stats")] 
     [SerializeField] private float totalDamageTaken;
     [SerializeField] private int stocks;
-    [SerializeField] private GameObject playerIngameUI;
+    [SerializeField] public GameObject playerIngameUI;
     
     [Header("Player Core")]
     [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
@@ -131,7 +130,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
      
 
     [Header("Respawn Logic")]
-    private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
+    //private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
     // TODO ^^ implement this
 
     [SerializeField] private float respawnTime;
@@ -169,6 +168,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         
         combatState = CombatState.Neutral; 
         
+        Instantiate(playerIngameUI, transform);
         foreach (var pair in lightHitboxList) // Setting up the light attack dictionary
         {
             if (!lightHitboxes.ContainsKey(pair.attackName))
@@ -197,7 +197,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         
         if(isCharging) ChargeLogic();
         // if (currentUltCharge < maxUltCharge) ChargeUltimate();
-        
     }
 
   
