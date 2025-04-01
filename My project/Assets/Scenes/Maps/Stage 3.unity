@@ -178,6 +178,7 @@ MonoBehaviour:
   - {fileID: 575306072}
   - {fileID: 540591853}
   playerWinPanel: {fileID: 0}
+  ingameUI: {fileID: 0}
   drawings: []
   distanceThreshold: 0.25
 --- !u!1 &462457448
@@ -192,7 +193,7 @@ GameObject:
   - component: {fileID: 462457450}
   m_Layer: 3
   m_Name: PlatformColliders
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -388,7 +389,7 @@ GameObject:
   - component: {fileID: 910264652}
   m_Layer: 3
   m_Name: PlatformColliders
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -583,7 +584,7 @@ GameObject:
   - component: {fileID: 1199546893}
   m_Layer: 3
   m_Name: PlatformColliders
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -1081,7 +1082,6 @@ GameObject:
   - component: {fileID: 1841286364}
   - component: {fileID: 1841286367}
   - component: {fileID: 1841286366}
-  - component: {fileID: 1841286369}
   - component: {fileID: 1841286368}
   m_Layer: 7
   m_Name: Platforms (1)
@@ -1169,27 +1169,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particleToActivate: {fileID: 2203597766815524495}
   cooldownTime: 1
---- !u!65 &1841286369
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1841286363}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.8856484, y: 0.06756557, z: 0.35271}
-  m_Center: {x: 0.01745981, y: 0.033782784, z: 0.00011904538}
 --- !u!1 &17948986425050938
 GameObject:
   m_ObjectHideFlags: 0
@@ -2209,7 +2188,6 @@ GameObject:
   - component: {fileID: 3160923923059317321}
   - component: {fileID: 5076982157992796637}
   - component: {fileID: 2639389216991956382}
-  - component: {fileID: 5076982157992796640}
   - component: {fileID: 5076982157992796639}
   m_Layer: 7
   m_Name: Platforms
@@ -7473,10 +7451,7 @@ MonoBehaviour:
   layout2Players: {fileID: 9201812112339364815}
   layout3Players: {fileID: 7314262142412998147}
   layout4Players: {fileID: 5271233703380268434}
-  p1UI: {fileID: 6193695603486148948}
-  p2UI: {fileID: 3733439813412009668}
-  p3UI: {fileID: 1293988339454258293}
-  p4UI: {fileID: 2864415860531421075}
+  playerUIPrefab: {fileID: 0}
   useTestMode: 0
   testPlayerCount: 2
   testRefreshKey: 114
@@ -18526,27 +18501,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particleToActivate: {fileID: 2884189790519634409}
   cooldownTime: 1
---- !u!65 &5076982157992796640
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1957635353349583807}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.8856484, y: 0.06756557, z: 0.35271}
-  m_Center: {x: 0.01745981, y: 0.033782784, z: 0.00011904538}
 --- !u!1 &5106972984309630094
 GameObject:
   m_ObjectHideFlags: 0
