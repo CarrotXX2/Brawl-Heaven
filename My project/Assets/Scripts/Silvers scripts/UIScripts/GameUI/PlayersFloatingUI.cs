@@ -60,7 +60,7 @@ public class PlayersFloatingUI : MonoBehaviour
 
     List<GameObject> GetPlayers()
     {
-        return GameplayManager.Instance?.playersAlive ?? new List<GameObject>();
+        return GameplayManager.Instance?.players ?? new List<GameObject>();
     }
 
     GameObject GetUIPrefab(int playerIndex)

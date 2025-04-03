@@ -5,6 +5,7 @@ public class AttackColliders : MonoBehaviour
    public AttackData attackData;
    public float chargedDamage;
    public bool isHeavyAttack;
+   public Transform playerTransform;
    private void OnTriggerEnter(Collider other)
    {
       if (isHeavyAttack)
@@ -20,8 +21,8 @@ public class AttackColliders : MonoBehaviour
                      
          if (damageable != null)
          {
-            damageable.TakeDamage(attackData, transform.parent, chargedDamage);
-                         
+            damageable.TakeDamage(attackData, playerTransform, chargedDamage);
+            print(chargedDamage);
             // hitTargets.Add(other.gameObject);
          }
       }
@@ -38,7 +39,7 @@ public class AttackColliders : MonoBehaviour
 
          if (damageable != null)
          {
-            damageable.TakeDamage(attackData, transform.parent, attackData.damage);
+            damageable.TakeDamage(attackData, playerTransform, attackData.damage);
 
             // hitTargets.Add(other.gameObject);
          }

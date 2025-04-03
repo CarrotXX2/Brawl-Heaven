@@ -20,8 +20,11 @@ public class DrawnMesh : MonoBehaviour
 
     [Header("Explosion logic")] 
     private float explosionTimer;
+    private float spawnTimer;
     private bool exploded;
     public ParticleSystem explosioParticleSystem;
+    private Renderer rend;
+    
     void Start()
     {
         Destroy(gameObject, drawingProperties.lifeTime);
@@ -46,6 +49,8 @@ public class DrawnMesh : MonoBehaviour
             case Property.Explosion:
             {
                  explosionTimer = Time.time + drawingProperties.explosionTimer;
+                 spawnTimer = Time.time;
+                 rend = gameObject.GetComponent<Renderer>();
             }
                 break;
             case Property.Healingzone:
@@ -85,6 +90,19 @@ public class DrawnMesh : MonoBehaviour
             {
                 CalculateDistance();
                 
+               /* float totalLifetime = explosionTimer;
+                float timeSinceSpawn = Time.time - spawnTimer ;
+                
+                // Clamp to get the progress from 0 to 1
+                float progress = (timeSinceSpawn / totalLifetime);
+
+                // Reverse the progress to flip the interpolation so it goes out instead of in
+                // float reversedProgress = 1 - progress;
+                
+                float shaderValue = Mathf.MoveTowards(20,0 , 20 * progress);
+                
+                rend.material.SetFloat("_Power", shaderValue); 
+                */
                 if (Time.time > explosionTimer && !exploded)
                 {
                     foreach (var player in playersInRange)
@@ -177,10 +195,5 @@ public class DrawnMesh : MonoBehaviour
     public bool IsPlayerInside(GameObject player)
     {
         return playersInRange.Contains(player);
-    }
-
-    private void OnDestroy()
-    {
-        GameplayManager.Instance.RemoveDrawing(gameObject.GetComponent<PolygonCollider2D>());
     }
 }

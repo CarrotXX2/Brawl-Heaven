@@ -33,6 +33,7 @@ public class Player : MonoBehaviour
     public GameObject currentPlayerIngameUI;
     [Header("Component References")]
     private Canvas canvas;
+    private GameplayManager gameplayManager;
 
     void Awake()
     {
@@ -67,8 +68,9 @@ public class Player : MonoBehaviour
 
     private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
-        GameplayManager gameplayManager = GameplayManager.Instance;
-
+        gameplayManager = null;
+        
+        gameplayManager = GameplayManager.Instance;
         if (gameplayManager != null)
         {
             gameObject.GetComponentInChildren<PlayerController>(true).GameStartSetup();
@@ -77,6 +79,7 @@ public class Player : MonoBehaviour
         else
         {
             Destroy(gameObject.GetComponentInChildren<PlayerController>().gameObject);
+            canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
         }
     }
     #region Character Selection
@@ -188,7 +191,7 @@ public class Player : MonoBehaviour
             // If the button implements the CharacterButton logic, pass playerID
             if (clickedObject.TryGetComponent(out CharacterButton characterButton))
             {
-                characterButton.OnButtonClicked(playerID);
+                characterButton.OnButtonClicked(gameObject);
                 Debug.Log($"Player {playerID} selected {characterButton.characterPrefab.name}");
             }
             // If the button has a generic event, invoke it
@@ -253,6 +256,16 @@ public class Player : MonoBehaviour
     {
         if (!CanPerformCharacterActions()) return;
         playerController.OnRightAnalogStickMove(ctx);
+    }
+
+    public void OnPauseButton(InputAction.CallbackContext ctx)
+    {
+        print("Button pressed");
+        if (gameplayManager != null && ctx.started)
+        {
+            gameplayManager.Pause();
+            print("Pause");
+        }
     }
 
     private bool CanPerformCharacterActions()

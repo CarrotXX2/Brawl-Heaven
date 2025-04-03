@@ -2217,6 +2217,7 @@ MonoBehaviour:
   totalDamageTaken: 0
   stocks: 3
   playerIngameUI: {fileID: 0}
+  playerID: 0
   moveInput: {x: 0, y: 0}
   movementSpeed: 3
   sprintMultiplier: 1.7
@@ -2230,7 +2231,7 @@ MonoBehaviour:
   dashForce: 20
   dashTime: 0.075
   doubleTapThreshold: 0.25
-  deadZoneThreshold: 0.25
+  deadZoneThreshold: 0.4
   lastTapTime: 0
   groundCheckLayer:
     serializedVersion: 2

@@ -127,11 +127,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] protected float maxUltCharge;
     [SerializeField] protected float currentUltCharge;
     
-   
-    [Header("Respawn Logic")]
-    //private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
-    // TODO ^^ implement this
+    protected bool usingUltimate = false;
 
+    [Header("Death")]
     [SerializeField] private float respawnTime;
     public bool touchedDeathZone;
     
@@ -157,6 +155,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Animator Reference")]
     protected Animator animator;
     
+    [Header("UI")]
+    protected bool gamePaused;
     #endregion
     
     #region Unity Methods
@@ -189,6 +189,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     protected virtual void Update()
     {
+        if (gamePaused) return;
+        
         LedgeGrab();
         Blocking();
         
@@ -201,7 +203,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
   
     private void FixedUpdate() // Use FixedUpdate for physics
     {
-        if (!rb.isKinematic)
+        if (!rb.isKinematic && !gamePaused)
         {    
             IsGrounded();
             ApplyGravity();
@@ -238,7 +240,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void Move()
     {
-        if (isBeingKnocked)
+        if (isBeingKnocked || usingUltimate)
         {
             return;
         }
@@ -283,6 +285,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     public void OnMove(InputAction.CallbackContext ctx)
     {
+        if (usingUltimate)
+        {
+            moveInput = ctx.ReadValue<Vector2>(); // Get X-axis input
+            return;
+        }
+        
         if (!CanMove())
         {
             moveInput = Vector2.zero; 
@@ -439,7 +447,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private bool CanPerformAction()
     {
         return !(HasState(MovementState.Dashing) || HasState(MovementState.Launched) ||
-                 HasState(CombatState.Blocking) || touchedDeathZone);
+                 HasState(CombatState.Blocking) || touchedDeathZone || gamePaused || usingUltimate);
     }
     private void OnCollisionEnter(Collision collision) // Having both a ray and collision detection helps for easier walljump implementation with certain objects
     {
@@ -659,21 +667,29 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     
     private void DetectHits(AttackData attackData, Collider attackCollider)
     {
+        attackCollider.gameObject.GetComponent<AttackColliders>().isHeavyAttack = false;
         attackCollider.gameObject.GetComponent<AttackColliders>().attackData = attackData;
+        attackCollider.gameObject.GetComponent<AttackColliders>().playerTransform = playerTransform;
     }
     
     private void DetectChargedHits(AttackData attackData, float damage, Collider attackCollider)
     {
+        attackCollider.gameObject.GetComponent<AttackColliders>().isHeavyAttack = true;
         attackCollider.gameObject.GetComponent<AttackColliders>().attackData = attackData;
         attackCollider.gameObject.GetComponent<AttackColliders>().chargedDamage = damage;
+        attackCollider.gameObject.GetComponent<AttackColliders>().playerTransform = playerTransform;
     }
 
     private void CancelAttack() // Cancel attack when certain interactions are met
     {
         attackType[0] = false;
         attackType[1] = false;
-        
-        StopCoroutine(attackCoroutine);
+
+        if (combatState == CombatState.Attacking )
+        {
+             StopCoroutine(attackCoroutine);
+        }
+       
         combatState = CombatState.Neutral;
     }
 
@@ -908,6 +924,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         {
             if (!touchedDeathZone)
             {
+                OnStockLost();
+                
                 touchedDeathZone = true;
                 knockbackVelocity = Vector2.zero;
                 rb.velocity = Vector2.zero;
@@ -927,8 +945,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             
                 // Instantiate death particle with the calculated rotation and adjusted position
                 ParticleSystem deathParticle = Instantiate(deathParticles, spawnPosition, particleRotation);
-                Destroy(deathParticle, 10);
-                OnStockLost();
+                Destroy(deathParticle.gameObject, 10);
+                
             }
         }
     }
@@ -937,8 +955,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void OnStockLost()
     {
         // play particle and death sound
-        stocks--;
-        rb.isKinematic = true;
+        if (!touchedDeathZone)
+        {
+             stocks--;
+             rb.isKinematic = true;
+        }
+       
         
         if (stocks > 0)
         {
@@ -1079,7 +1101,18 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         playerIngameUI = GameObject.FindGameObjectWithTag("UI");
     }
-    
+
+    public void GamePaused()
+    {
+        rb.isKinematic = true;
+        gamePaused = true;
+    }
+
+    public void GameResumed()
+    {
+        rb.isKinematic = false;
+        gamePaused = false;
+    }
     #endregion
    
 

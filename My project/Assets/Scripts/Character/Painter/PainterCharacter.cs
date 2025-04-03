@@ -42,10 +42,12 @@ public class PainterCharacter : PlayerController
     [SerializeField] private GameObject propertyWheel;
     [SerializeField] private GameObject arrow;
     
-    [Space] private bool usingUltimate = false;
+  
 
     protected override void Update()
     {
+        if (gamePaused) return; 
+        
         if (!usingUltimate)
         {
             base.Update();

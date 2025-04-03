@@ -6,6 +6,7 @@ public class GameplayManager : MonoBehaviour
 {
     public static GameplayManager Instance;
     
+    
     [Header("Players")]
     public List<GameObject> players = new List<GameObject>();
     public List<GameObject> playersAlive = new List<GameObject>();
@@ -19,11 +20,10 @@ public class GameplayManager : MonoBehaviour
     [Header("UI Panels")]
     [SerializeField] private GameObject playerWinPanel;
     [SerializeField] private GameObject ingameUI;
+    [SerializeField] private GameObject pausePanel;
     
-    [Header("Drawing management")]
-    public List<PolygonCollider2D> drawings = new List<PolygonCollider2D>(); // Keeps track of every current drawing/ultimate on the field
-    [SerializeField] private float distanceThreshold;
-    
+    [Header("Bools")]
+    public bool gamePaused = false;
     private void Awake()
     {
         Instance = this;
@@ -77,19 +77,42 @@ public class GameplayManager : MonoBehaviour
             PlayerWin(playersAlive[0]);
         }
     }
-    public void AddDrawing(PolygonCollider2D collider)
-    {
-        drawings.Add(collider);
-    }
-
-    public void RemoveDrawing(PolygonCollider2D collider)
-    {
-        drawings.Remove(collider);
-    }
-
-
+    
     private void PlayerWin(GameObject player)
     {
+        playerWinPanel.SetActive(true);
         WinScreenAnimatie.Instance.AssignWinner(player.GetComponent<PlayerController>().playerID);
+    }
+
+    public void Pause()
+    {
+        pausePanel.SetActive(true);
+        print("Pause");
+
+        foreach (var player in players)
+        {
+            player.GetComponent<PlayerController>().GamePaused();
+        }
+        
+        if (gamePaused)
+        {
+            Resume();
+            return;
+        }
+        
+        gamePaused = true;
+    }
+
+    private void Resume()
+    {
+        pausePanel.SetActive(false);
+        gamePaused = false;
+        
+        foreach (var player in players)
+        {
+            player.GetComponent<PlayerController>().GameResumed();
+        }
+
+        
     }
 }

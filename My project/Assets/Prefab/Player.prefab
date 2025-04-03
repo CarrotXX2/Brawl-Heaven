@@ -247,7 +247,19 @@ MonoBehaviour:
     m_ActionId: 24da68c6-9188-4592-a11f-180875f05fb8
     m_ActionName: Navigate UI/Right
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6441858401770141617}
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: OnPauseButton
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 9b6cae2d-b87d-4b92-9fbc-049909fc912d
     m_ActionName: Player Ingame Actions/OpenSettings[/DualShock4GamepadHID/start,/DualSenseGamepadHID/start,/XInputControllerWindows/start]
   m_NeverAutoSwitchControlSchemes: 0
