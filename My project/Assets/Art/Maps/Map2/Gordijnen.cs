@@ -1,99 +1,56 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(SkinnedMeshRenderer))]
-public class BlendShapeLooperWithCooldown : MonoBehaviour
+public class CurtainController : MonoBehaviour
 {
-    [Header("BlendShape Settings")]
-    [Tooltip("Index of the blend shape to animate")]
+    [Header("BlendShape Instellingen")]
     public int blendShapeIndex = 0;
 
-    [Header("Animation Settings")]
-    [Tooltip("Duration of the animation in seconds")]
-    public float animationDuration = 2f;
-    [Tooltip("Duration of cooldown between animations in seconds")]
-    public float cooldownDuration = 1f;
-    [Tooltip("Controls the acceleration (1 = linear)")]
-    [Range(0.1f, 5f)] public float curvePower = 2f;
-    [Tooltip("Smoothness of the transition")]
-    [Range(0.1f, 3f)] public float smoothness = 1f;
+    [Header("Animatie Instellingen")]
+    public float transitionSpeed = 25f; // Hoe snel het gordijn opent/sluit
+    public float holdTimeOpen = 2f;     // Tijd dat het gordijn open blijft
+    public float holdTimeClosed = 1f;   // Tijd dat het gordijn dicht blijft
 
     private SkinnedMeshRenderer skinnedMeshRenderer;
-    private float cycleTimer;
-    private bool isAnimating;
-    private AnimationCurve animationCurve;
+    private float targetWeight = 0f;   // Doelwaarde (0% of 100%)
+    private float currentWeight = 0f;  // Huidige waarde van de shape key
+    private float velocity = 0f;       // Voor SmoothDamp
+    private float holdTimer = 0f;
+    private bool isHolding = false;
 
     void Start()
     {
         skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-        CreateAnimationCurve();
-        isAnimating = true;
-        cycleTimer = 0f;
+        currentWeight = 0f; // Start met gordijn dicht
+        targetWeight = 100f; // Eerst openen
     }
 
     void Update()
     {
-        cycleTimer += Time.deltaTime;
-
-        if (isAnimating)
+        if (isHolding)
         {
-            // Animation phase
-            if (cycleTimer <= animationDuration)
+            holdTimer += Time.deltaTime;
+            float holdDuration = (targetWeight == 0f) ? holdTimeClosed : holdTimeOpen;
+
+            if (holdTimer >= holdDuration)
             {
-                float normalizedTime = cycleTimer / animationDuration;
-                float weight = animationCurve.Evaluate(normalizedTime);
-                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, weight * 100f);
-            }
-            else
-            {
-                // Transition to cooldown
-                isAnimating = false;
-                cycleTimer = 0f;
-                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, 0f);
+                isHolding = false;
+                holdTimer = 0f;
+                targetWeight = (targetWeight == 100f) ? 0f : 100f; // Wissel tussen open en dicht
             }
         }
         else
         {
-            // Cooldown phase
-            if (cycleTimer >= cooldownDuration)
+            // Soepele overgang met SmoothDamp
+            currentWeight = Mathf.SmoothDamp(currentWeight, targetWeight, ref velocity, 1f / transitionSpeed);
+            skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, currentWeight);
+
+            if (Mathf.Abs(currentWeight - targetWeight) < 0.5f) // Zodra bijna bereikt, stop en houd vast
             {
-                // Transition back to animation
-                isAnimating = true;
-                cycleTimer = 0f;
+                currentWeight = targetWeight;
+                isHolding = true;
+                velocity = 0f; // Reset snelheid voor volgende cyclus
             }
         }
     }
-
-    void CreateAnimationCurve()
-    {
-        animationCurve = new AnimationCurve();
-
-        // Start at 0
-        animationCurve.AddKey(0f, 0f);
-
-        // Peak at middle of animation duration
-        animationCurve.AddKey(0.5f, 1f);
-
-        // End back at 0
-        animationCurve.AddKey(1f, 0f);
-
-        // Adjust curve handles for smoothness and shape
-        for (int i = 0; i < animationCurve.length; i++)
-        {
-            Keyframe key = animationCurve[i];
-
-            if (i == 1) // At the peak keyframe
-            {
-                key.inTangent = smoothness * curvePower;
-                key.outTangent = -smoothness * curvePower;
-            }
-            else
-            {
-                key.inTangent = 0;
-                key.outTangent = 0;
-            }
-
-            animationCurve.MoveKey(i, key);
-        }
-    }
-
 }

@@ -403,8 +403,8 @@ Transform:
   m_GameObject: {fileID: 282209765}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.81, y: 5.04, z: 2.723}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 16.524, y: 6.4515, z: 3.8121}
+  m_LocalScale: {x: 1.3991051, y: 1.3991051, z: 1.3991051}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1307941382}
@@ -459,7 +459,7 @@ GameObject:
   - component: {fileID: 339089967}
   m_Layer: 3
   m_Name: PlatformColliders (2)
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -714,37 +714,6 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -3.4325733, y: 11.617806, z: -16.110909}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &618037815
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 618037816}
-  m_Layer: 0
-  m_Name: ObjectLocation
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &618037816
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 618037815}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1005,18 +974,33 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.3991051
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.3991051
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.3991051
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.76
+      value: 0.46329
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.88
+      value: 2.6326
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8286a34edca574b47be3e4b50fcf4875,
         type: 3}
@@ -1097,7 +1081,7 @@ PrefabInstance:
     - target: {fileID: -3887185075125053422, guid: 8286a34edca574b47be3e4b50fcf4875,
         type: 3}
       propertyPath: m_BlendShapeWeights.Array.data[0]
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 8286a34edca574b47be3e4b50fcf4875,
         type: 3}
@@ -1137,10 +1121,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blendShapeIndex: 0
-  animationDuration: 5
-  cooldownDuration: 1
-  curvePower: 2
-  smoothness: 3
+  transitionSpeed: 1
+  holdTimeOpen: 0
+  holdTimeClosed: 2
 --- !u!1 &874756553
 GameObject:
   m_ObjectHideFlags: 0
@@ -1571,8 +1554,8 @@ Transform:
   m_GameObject: {fileID: 1015424499}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5, z: 2.9}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 6.3955, z: 4.0597}
+  m_LocalScale: {x: 1.3991051, y: 1.3991051, z: 1.3991051}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 38940192}
@@ -1594,7 +1577,7 @@ GameObject:
   - component: {fileID: 1089271798}
   m_Layer: 3
   m_Name: PlatformColliders (3)
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1668,7 +1651,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 11400000, guid: a6560a915ef98420e9faacc1c7438823, type: 2}
+  sharedProfile: {fileID: 11400000, guid: 71cb63c0b979ecf4ba7f01b0bea9d8a3, type: 2}
 --- !u!4 &1201185941
 Transform:
   m_ObjectHideFlags: 0
@@ -1696,7 +1679,7 @@ GameObject:
   - component: {fileID: 1307941383}
   m_Layer: 3
   m_Name: PlatformColliders
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1747,18 +1730,33 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.3991051
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.3991051
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.3991051
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.88
+      value: 0.63119
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.7211053
+      value: 5.2085
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c789ab481f52f8d4d9c444359cfac2e3,
         type: 3}
@@ -2189,9 +2187,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1947531283}
   - component: {fileID: 1947531284}
-  m_Layer: 7
+  m_Layer: 3
   m_Name: PlatformColliders
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2457,8 +2455,8 @@ Transform:
   m_GameObject: {fileID: 1972533750}
   serializedVersion: 2
   m_LocalRotation: {x: 0.067754045, y: -0, z: -0, w: 0.99770206}
-  m_LocalPosition: {x: 0, y: -2, z: 7.787}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -1.6302, z: 6.5988}
+  m_LocalScale: {x: 1.3991051, y: 1.3991051, z: 1.3991051}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 295534840}
@@ -2488,8 +2486,8 @@ Transform:
   m_GameObject: {fileID: 2008494959}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.2809799, z: -0.56338596}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 1.1922, z: -0.78595}
+  m_LocalScale: {x: 1.3991051, y: 1.3991051, z: 1.3991051}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2144313422}
@@ -2706,7 +2704,7 @@ GameObject:
   - component: {fileID: 2091544328}
   m_Layer: 3
   m_Name: PlatformColliders (1)
-  m_TagString: Untagged
+  m_TagString: Wall Jump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5729,7 +5727,6 @@ SceneRoots:
   - {fileID: 295534840}
   - {fileID: 282209766}
   - {fileID: 1333249274}
-  - {fileID: 618037816}
   - {fileID: 75099669}
   - {fileID: 857795249}
   - {fileID: 3818685807924689456}
