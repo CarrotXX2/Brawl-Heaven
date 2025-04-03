@@ -50,11 +50,12 @@ MonoBehaviour:
   cursorPrefab: {fileID: 421865388363994176, guid: 5e657d68010f1e6429ae4e723b36c09f,
     type: 3}
   cursorSpeed: 750
-  playerIngameUI:
+  playerIngameUIArray:
   - {fileID: 4316803201011385616, guid: 9d171c2452a642c4bb04b704570ff3bc, type: 3}
   - {fileID: 1649659401166628004, guid: b4f2a884f37c0634c93ebd5139febcb1, type: 3}
   - {fileID: 3843920537120818061, guid: ed85275a58831c044b0b029c156570eb, type: 3}
   - {fileID: 3430326679619415256, guid: c452f0b90381a08419b24b1beccba373, type: 3}
+  currentPlayerIngameUI: {fileID: 0}
 --- !u!114 &6602625386316650211
 MonoBehaviour:
   m_ObjectHideFlags: 0

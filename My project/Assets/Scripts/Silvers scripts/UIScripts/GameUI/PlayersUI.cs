@@ -1,133 +1,166 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 public class PlayerUIManager : MonoBehaviour
 {
-    [Header("UI Layouts")]
     public GameObject layout2Players;
     public GameObject layout3Players;
     public GameObject layout4Players;
-    
-    [Header("UI Prefab")]
-    public GameObject playerUIPrefab; // The UI prefab to instantiate for each player
-    
+
+    [Header("Player UI References")]
+    public GameObject p1UI;
+    public GameObject p2UI;
+    public GameObject p3UI;
+    public GameObject p4UI;
+
     [Header("Test Mode Settings")]
     public bool useTestMode = false;
     [Range(1, 4)] public int testPlayerCount = 2;
     public KeyCode testRefreshKey = KeyCode.R;
     
-    // Dictionary to track instantiated UI elements by player ID
-    private Dictionary<int, GameObject> playerUIInstances = new Dictionary<int, GameObject>();
-    
     void Start()
     {
-        UpdatePlayerUI();
+        SetPlayerUI();
     }
-    
+
     void Update()
     {
         if (useTestMode && Input.GetKeyDown(testRefreshKey))
         {
-            UpdatePlayerUI();
+            SetPlayerUI();
         }
     }
-    
-    public void UpdatePlayerUI()
+    public void SetPlayerUI()
     {
-        // Clean up any existing UI elements
-        ClearPlayerUI();
-        
         int playerCount = GetPlayerCount();
+        SetAllUIActive(false);
         SetAllLayoutsActive(false);
-        
-        if (playerCount <= 0) return;
-        
-        GameObject activeLayout;
-        if (playerCount == 1 || playerCount == 2)
+
+        if (playerCount == 1)
         {
-            activeLayout = layout2Players;
+            layout2Players.SetActive(true);
+            p1UI.SetActive(true);
+            PositionUIElement(p1UI, "Pos1", layout2Players);
+            return;
         }
-        else if (playerCount == 3)
+        switch (playerCount)
         {
-            activeLayout = layout3Players;
-        }
-        else
-        {
-            activeLayout = layout4Players;
-        }
-        
-        if (activeLayout == null) return;
-        
-        activeLayout.SetActive(true);
-        
-        // Create UI for each player
-        for (int i = 1; i <= playerCount; i++)
-        {
-            CreatePlayerUI(i, activeLayout);
+            case 2:
+                ActivateLayout(layout2Players, 2);
+                break;
+            case 3:
+                ActivateLayout(layout3Players, 3);
+                break;
+            case 4:
+                ActivateLayout(layout4Players, 4);
+                break;
         }
     }
-    
-    private void CreatePlayerUI(int playerIndex, GameObject layout)
+
+    public void UpdatePlayerHealthUI(int playerID, float damageTaken)
     {
-        if (playerUIPrefab == null || layout == null) return;
-        
-        Transform posTransform = layout.transform.Find("Pos" + playerIndex);
-        if (posTransform == null) return;
-        
-        GameObject uiInstance = Instantiate(playerUIPrefab, posTransform.position, posTransform.rotation);
-        uiInstance.name = "PlayerUI_" + playerIndex;
-        
-        // You can set up any player-specific UI customization here
-        EnhancedDamageDisplay playerUI = uiInstance.GetComponent<EnhancedDamageDisplay>();
-        if (playerUI != null)
+        print("Change UI");
+        if (playerID == 0)
         {
-            playerUI.SetPlayerIndex(playerIndex);
+            p1UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
         }
-        
-        // Store reference to UI in dictionary
-        playerUIInstances[playerIndex] = uiInstance;
+        else if (playerID == 1)
+        {
+            p2UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+        }
+        else if (playerID == 2)
+        {
+            p3UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+        }
+        else if (playerID == 3)
+        {
+            p4UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+        }
     }
     
-    private void ClearPlayerUI()
+    public void UpdatePlayerStockUI(int playerID, float damageTaken)
     {
-        foreach (var uiInstance in playerUIInstances.Values)
+        if (playerID == 1)
         {
-            if (uiInstance != null)
-            {
-                Destroy(uiInstance);
-            }
+            p1UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
         }
-        playerUIInstances.Clear();
+        else if (playerID == 2)
+        {
+            p2UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+        }
+        else if (playerID == 3)
+        {
+            p3UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+        }
+        else if (playerID == 4)
+        {
+            p4UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+        }
     }
-    
+
     int GetPlayerCount()
     {
-        if (useTestMode)
+        if ( GameplayManager.Instance != null && GameplayManager.Instance.players != null)
         {
-            return Mathf.Clamp(testPlayerCount, 1, 4);
+            return GameplayManager.Instance.players.Count;
         }
-        else
-        {
-            return GameplayManager.Instance != null && GameplayManager.Instance.players != null
-                ? GameplayManager.Instance.players.Count
-                : 0;
-        }
+        return 0;
     }
-    
+    void SetAllUIActive(bool active)
+    {
+        if (p1UI != null) p1UI.SetActive(active);
+        if (p2UI != null) p2UI.SetActive(active);
+        if (p3UI != null) p3UI.SetActive(active);
+        if (p4UI != null) p4UI.SetActive(active);
+    }
+
     void SetAllLayoutsActive(bool active)
     {
         if (layout2Players != null) layout2Players.SetActive(active);
         if (layout3Players != null) layout3Players.SetActive(active);
         if (layout4Players != null) layout4Players.SetActive(active);
     }
-    
-    // Method to get a player's UI instance
-    public GameObject GetPlayerUI(int playerIndex)
+
+    void ActivateLayout(GameObject layout, int playerCount)
     {
-        if (playerUIInstances.TryGetValue(playerIndex, out GameObject ui))
+        if (layout == null) return;
+
+        layout.SetActive(true);
+
+        for (int i = 1; i <= playerCount; i++)
         {
-            return ui;
+            GameObject uiElement = GetUIElement(i);
+            if (uiElement != null)
+            {
+                uiElement.SetActive(true);
+                PositionUIElement(uiElement, "Pos" + i, layout);
+            }
         }
-        return null;
+    }
+
+    GameObject GetUIElement(int playerIndex)
+    {
+        switch (playerIndex)
+        {
+            case 1: return p1UI;
+            case 2: return p2UI;
+            case 3: return p3UI;
+            case 4: return p4UI;
+            default: return null;
+        }
+    }
+
+    void PositionUIElement(GameObject uiElement, string positionName, GameObject layout)
+    {
+        if (uiElement == null || layout == null) return;
+
+        Transform posTransform = layout.transform.Find(positionName);
+        if (posTransform != null)
+        {
+            uiElement.transform.position = posTransform.position;
+            uiElement.transform.rotation = posTransform.rotation;
+        }
+
     }
 }

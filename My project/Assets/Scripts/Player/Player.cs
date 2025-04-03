@@ -49,8 +49,6 @@ public class Player : MonoBehaviour
         {
             OnCharacterSelectStart();
         }
-
-    
     }
     void OnEnable()
     {
@@ -74,11 +72,11 @@ public class Player : MonoBehaviour
         if (gameplayManager != null)
         {
             gameObject.GetComponentInChildren<PlayerController>(true).GameStartSetup();
+            gameObject.GetComponentInChildren<PlayerController>(true).playerID = playerID;
         }
-
-        if (playerController)
+        else
         {
-            playerController.playerIngameUI = playerIngameUIArray[playerID];
+            Destroy(gameObject.GetComponentInChildren<PlayerController>().gameObject);
         }
     }
     #region Character Selection

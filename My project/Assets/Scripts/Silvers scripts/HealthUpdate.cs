@@ -28,7 +28,7 @@ public class EnhancedDamageDisplay : MonoBehaviour
     private Vector3 originalTextPosition;
     private Coroutine countCoroutine;
 
-    private void Awake()
+    private void Start()
     {
         damageText = GetComponent<TMP_Text>();
         originalTextPosition = damageText.transform.localPosition;

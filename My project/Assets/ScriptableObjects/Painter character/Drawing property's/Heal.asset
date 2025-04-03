@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
   m_Name: Heal
   m_EditorClassIdentifier: 
-  name: Heal
+  propertyName: 
   property: 1
   lifeTime: 8
   distanceThreshold: 0.16
   outlineWidth: 1.1
   mainMaterial: {fileID: 2100000, guid: 3dd4c20228c0a0e4db8992c862b3d3ce, type: 2}
   backGroundMaterial: {fileID: 2100000, guid: 1c71752704aa88b4081b1149055c1f28, type: 2}
-  healingAmount: 5
+  healingAmount: 7
   healingInterval: 1.75
   pullForce: 0
   damage: 0

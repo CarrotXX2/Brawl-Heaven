@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be647a76c5565542a94dcef031bae4b, type: 3}
   m_Name: Explosion
   m_EditorClassIdentifier: 
-  name: Explosion
+  propertyName: 
   property: 3
   lifeTime: 3.1
-  distanceThreshold: 0
+  distanceThreshold: 0.1
   outlineWidth: 1.1
   mainMaterial: {fileID: 2100000, guid: cdf6d260f23c902428a91936ed545623, type: 2}
   backGroundMaterial: {fileID: 2100000, guid: 0d963f824007d9d4c9a9ad933e2655cf, type: 2}

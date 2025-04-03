@@ -9,6 +9,7 @@ TagManager:
   - Selected
   - Border
   - Drawing
+  - UI
   layers:
   - Default
   - TransparentFX

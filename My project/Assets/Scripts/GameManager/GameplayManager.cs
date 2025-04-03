@@ -53,10 +53,6 @@ public class GameplayManager : MonoBehaviour
     private void SetUI()
     {
         ingameUI.SetActive(true);
-        for (int i = 0; i < players.Count; i++)
-        {
-           // ingameUI.;
-        }
     }
     public IEnumerator RespawnPlayer(GameObject player)
     {
@@ -77,6 +73,7 @@ public class GameplayManager : MonoBehaviour
         
         if (playersAlive.Count == 1)
         {
+            print("Player wins");
             PlayerWin(playersAlive[0]);
         }
     }
@@ -93,6 +90,6 @@ public class GameplayManager : MonoBehaviour
 
     private void PlayerWin(GameObject player)
     {
-        
+        WinScreenAnimatie.Instance.AssignWinner(player.GetComponent<PlayerController>().playerID);
     }
 }

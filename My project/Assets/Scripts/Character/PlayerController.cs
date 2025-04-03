@@ -37,8 +37,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float totalDamageTaken;
     [SerializeField] private int stocks;
     [SerializeField] public GameObject playerIngameUI;
-    
+
     [Header("Player Core")]
+    public int playerID;
     [SerializeField] protected Vector2 moveInput; // Float that holds the value of the input manager (-1 = left, 0 = neutral, 1 = right)
     
     [SerializeField] private float movementSpeed; // Base movementspeed
@@ -81,9 +82,9 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [Header("Launch Logic")] 
     [SerializeField] private int weight; // Weight determines the players knockback, heavier weight less knockback
     [SerializeField] private float knockbackReduceSpeed; // Controls how quickly knockback slows down
-    [SerializeField] private float knockbackDurationFactor;
+    [SerializeField] private float knockbackDurationFactor; // Factor used for calculating the time that needs to be reduced when hit by an attack
     
-    [SerializeField] private float velocityMganitude; // 
+    [SerializeField] private float velocityMganitude; // Current launch velocity being applied on the player 
     
     private float minKnockback;
     private bool isBeingKnocked = false;
@@ -126,9 +127,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] protected float maxUltCharge;
     [SerializeField] protected float currentUltCharge;
     
-    // Factor used for calculating the time that needs to be reduced when hit by an attack
-     
-
+   
     [Header("Respawn Logic")]
     //private bool invincible = false; // When Respawning you become Invincible for a few seconds to get back into the fight 
     // TODO ^^ implement this
@@ -168,7 +167,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         
         combatState = CombatState.Neutral; 
         
-        Instantiate(playerIngameUI, transform);
+       
         foreach (var pair in lightHitboxList) // Setting up the light attack dictionary
         {
             if (!lightHitboxes.ContainsKey(pair.attackName))
@@ -689,11 +688,12 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                     
                     TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
                    
-                    playerIngameUI.GetComponent<EnhancedDamageDisplay>().UpdateDamage(totalDamageTaken);
+                    playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerHealthUI(playerID,totalDamageTaken);
                 }
                 else // Explosion damage
                 {
                     totalDamageTaken += damage;
+                    playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerHealthUI(playerID,totalDamageTaken);
                 }
                 break;
             case CombatState.Blocking:
@@ -711,8 +711,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
                 print($"Took {chargedDamage} damage");
 
                 TakeKB(attackData, enemyTransform, attackData.knockback); // Apply's a knockback if the move has knockback property's
-               // StartCoroutine(ApplyHitStun(attackData)); // Apply's hitstun if the move has hitstun property's
-
+                
+                playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerHealthUI(playerID,totalDamageTaken);
                 break;
             case CombatState.Blocking:
                 currentBlockingTime -= attackData.damage * shieldReductionFactor;
@@ -727,7 +727,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         totalDamageTaken = Mathf.Clamp(totalDamageTaken, 0, Mathf.Infinity);
         
         healParticle.Play();
-        playerIngameUI.GetComponent<EnhancedDamageDisplay>().UpdateDamage(totalDamageTaken);
+        playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerHealthUI(playerID ,totalDamageTaken);
     }
     
     private void UpdateKnockback()
@@ -798,32 +798,6 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         Debug.Log($"Knockback Applied - Intensity: {knockbackIntensity}, Direction: {knockbackVelocity}");
     } 
     
-    // No need anymore
-    private IEnumerator ApplyHitStun(AttackData attackData)
-    {
-        combatState = CombatState.HitStun;
-
-        // Cancel any ongoing attack
-        if (performingAttack && combatState != CombatState.Unstoppable)
-        {
-            if (attackCoroutine != null)
-            {
-                StopCoroutine(attackCoroutine);
-            }
-
-            CancelAttack(); // Use your existing method to reset attack states
-        }
-
-        // SetTriggerAnimation("GettingHit");
-        yield return new WaitForSeconds(attackData.hitStun);
-
-        // Reset states more comprehensively
-        combatState = CombatState.Neutral;
-
-        // Ensure rigidbody is fully reset
-        rb.velocity = Vector3.zero;
-    }
-
     private bool CanAttack()
     {
         if (movementState == MovementState.Grounded && combatState == CombatState.Neutral ||
@@ -979,6 +953,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void Respawn()
     {
         totalDamageTaken = 0;
+        playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerHealthUI(playerID, totalDamageTaken);
         knockbackVelocity = Vector2.zero;
         rb.velocity = Vector2.zero;
         
@@ -988,6 +963,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
 
     private void Die()
     {
+        WinScreenAnimatie.Instance.AssignPlayerPlacement(playerID);
         GameplayManager.Instance.PlayerDeath(gameObject);
     }
     #endregion
@@ -1101,7 +1077,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     #region UI Logic
     public void SetPlayerIngameUI()
     {
-       playerIngameUI = gameObject.transform.parent.gameObject.GetComponent<Player>().currentPlayerIngameUI;
+        playerIngameUI = GameObject.FindGameObjectWithTag("UI");
     }
     
     #endregion
