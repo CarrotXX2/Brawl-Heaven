@@ -1426,7 +1426,7 @@ PrefabInstance:
     - target: {fileID: 2660932017853376510, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4168928489990785172, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
@@ -1540,7 +1540,7 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: 1a9d39929b6ce824790710970875c2aa, type: 3}
 --- !u!1 &602306494 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 2660932017853376510, guid: 1a9d39929b6ce824790710970875c2aa,
+  m_CorrespondingSourceObject: {fileID: 7089708571348568003, guid: 1a9d39929b6ce824790710970875c2aa,
     type: 3}
   m_PrefabInstance: {fileID: 602306493}
   m_PrefabAsset: {fileID: 0}

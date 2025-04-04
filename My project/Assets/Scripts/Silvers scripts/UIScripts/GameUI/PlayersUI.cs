@@ -79,23 +79,23 @@ public class PlayerUIManager : MonoBehaviour
         }
     }
     
-    public void UpdatePlayerStockUI(int playerID, float damageTaken)
+    public void UpdatePlayerStockUI(int playerID)
     {
         if (playerID == 1)
         {
-            p1UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+            p1UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
         else if (playerID == 2)
         {
-            p2UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+            p2UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
         else if (playerID == 3)
         {
-            p3UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+            p3UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
         else if (playerID == 4)
         {
-            p4UI.GetComponentInChildren<EnhancedDamageDisplay>().UpdateDamage(damageTaken);
+            p4UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
     }
 

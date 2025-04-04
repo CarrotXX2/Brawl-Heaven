@@ -19,9 +19,20 @@ public class EnhancedDamageDisplay : MonoBehaviour
     public float baseShakeDuration = 0.3f;
     public float baseShakeIntensity = 15f;
 
+    [Header("Lives Settings")]
+    public int maxLives = 3;
+    public int currentLives = 3;
+    public TMP_Text livesText;
+    public string livesPrefix = "Lives: ";
+    public string livesSymbol = "♥";
+    public Color livesColor = new Color(1f, 0.2f, 0.2f); // Bright red for hearts
+    public bool showNumeric = false;  // If true, shows "Lives: 3" format
+    public bool showSymbols = false; // If true, shows "Lives: ♥♥♥" format
+
     [Header("Testing Settings")]
     public float damageAmount = 50f;
     public bool startCountUp = false;
+    public bool decrementLife = false;
 
     private TMP_Text damageText;
     private float currentDisplayDamage;
@@ -34,6 +45,12 @@ public class EnhancedDamageDisplay : MonoBehaviour
         originalTextPosition = damageText.transform.localPosition;
         currentDisplayDamage = 0;
         UpdateText();
+        
+        // Initialize lives display if assigned
+        if (livesText != null)
+        {
+            UpdateLivesDisplay();
+        }
     }
 
     public void SetPlayerIndex(int playerIndex)
@@ -48,9 +65,15 @@ public class EnhancedDamageDisplay : MonoBehaviour
             startCountUp = false;
             UpdateDamage(damageAmount);
         }
+        
+        if (decrementLife)
+        {
+            decrementLife = false;
+            DecrementLife();
+        }
+        
         UpdateText();
     }
-
 
     public void UpdateDamage(float newDamage)
     {
@@ -120,5 +143,77 @@ public class EnhancedDamageDisplay : MonoBehaviour
         }
 
         damageText.transform.localPosition = originalTextPosition;
+    }
+    
+    // Lives management functions
+    public void DecrementLife()
+    {
+        if (currentLives > 0)
+        {
+            currentLives--;
+            UpdateLivesDisplay();
+            
+            // Optional - shake the lives display when losing a life
+            if (livesText != null)
+            {
+                StartCoroutine(ShakeLivesText(baseShakeDuration, baseShakeIntensity * 0.5f));
+            }
+        }
+    }
+    
+    public void AddLife()
+    {
+        if (currentLives < maxLives)
+        {
+            currentLives++;
+            UpdateLivesDisplay();
+        }
+    }
+    
+    public void ResetLives()
+    {
+        currentLives = maxLives;
+        UpdateLivesDisplay();
+    }
+    
+    private void UpdateLivesDisplay()
+    {
+        if (livesText == null) return;
+        
+        livesText.color = livesColor;
+        
+        if (showSymbols)
+        {
+            string hearts = "";
+            for (int i = 0; i < currentLives; i++)
+            {
+                hearts += livesSymbol;
+            }
+            livesText.text = livesPrefix + hearts;
+        }
+        else if (showNumeric)
+        {
+            livesText.text = livesPrefix + currentLives.ToString();
+        }
+        else
+        {
+            // Default case - show both
+            livesText.text = livesPrefix + currentLives.ToString() + " " + livesSymbol;
+        }
+    }
+    
+    private IEnumerator ShakeLivesText(float duration, float intensity)
+    {
+        Vector3 originalLivesPosition = livesText.transform.localPosition;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            livesText.transform.localPosition = originalLivesPosition + Random.insideUnitSphere * intensity;
+            yield return null;
+        }
+
+        livesText.transform.localPosition = originalLivesPosition;
     }
 }

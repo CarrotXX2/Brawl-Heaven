@@ -401,8 +401,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     private void TryLedgeGrab(Vector3 direction)
     {
         // Make a begin and end position for the linecast based on players height 
-        Vector3 lineDownStart = playerTransform.position + Vector3.up * 1.2f + direction;
-        Vector3 lineDownEnd = playerTransform.position + Vector3.up * 1f + direction;
+        Vector3 lineDownStart = playerTransform.position + Vector3.up * 1.2f + (direction * 0.4f);
+        Vector3 lineDownEnd = playerTransform.position + Vector3.up * 0.9f + (direction * 0.4f);
 
         Debug.DrawLine(lineDownStart, lineDownEnd, Color.red, 2f);
 

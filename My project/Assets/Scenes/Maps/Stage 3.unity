@@ -341,7 +341,7 @@ GameObject:
   m_Component:
   - component: {fileID: 462457449}
   - component: {fileID: 462457450}
-  m_Layer: 3
+  m_Layer: 7
   m_Name: PlatformColliders
   m_TagString: Wall Jump
   m_Icon: {fileID: 0}
@@ -1289,7 +1289,7 @@ PrefabInstance:
     - target: {fileID: 2660932017853376510, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4168928489990785172, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
@@ -1513,7 +1513,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1604821477 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 2660932017853376510, guid: 1a9d39929b6ce824790710970875c2aa,
+  m_CorrespondingSourceObject: {fileID: 7089708571348568003, guid: 1a9d39929b6ce824790710970875c2aa,
     type: 3}
   m_PrefabInstance: {fileID: 1604821472}
   m_PrefabAsset: {fileID: 0}
