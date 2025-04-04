@@ -28,7 +28,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BackgroundOpacity: 0.09
-    - _Power: 20
+    - _Power: 0
     - _QueueControl: 0
     - _QueueOffset: 15
     m_Colors:

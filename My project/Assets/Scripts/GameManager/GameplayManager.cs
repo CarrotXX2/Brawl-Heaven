@@ -104,7 +104,7 @@ public class GameplayManager : MonoBehaviour
         gamePaused = true;
     }
 
-    private void Resume()
+    public void Resume()
     {
         pausePanel.SetActive(false);
         gamePaused = false;
