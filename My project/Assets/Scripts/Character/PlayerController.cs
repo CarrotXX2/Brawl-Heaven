@@ -122,7 +122,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     [SerializeField] private float shieldReductionFactor;
     [SerializeField] private float currentBlockingTime;
     [SerializeField] private float blockRechargeTime;
-
+    [SerializeField] private GameObject blockingObject; 
+        
     [Header("Ultimate logic")] 
     [SerializeField] protected float maxUltCharge;
     [SerializeField] protected float currentUltCharge;
@@ -855,12 +856,14 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
             Debug.Log("Blocking started");
             combatState = CombatState.Blocking;
             rb.velocity = Vector3.zero; 
+            blockingObject.SetActive(true);
         }
 
         if (ctx.canceled && combatState == CombatState.Blocking)
         {
             Debug.Log("Blocking stopped");
             combatState = CombatState.Neutral;
+            blockingObject.SetActive(false);
         }
     }
     
@@ -886,12 +889,15 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         }
         else // If blocking is true
         {
+            
             currentBlockingTime -= Time.deltaTime;
             currentBlockingTime = Mathf.Clamp(currentBlockingTime, 0, totalBlockingTime);
-
+            
+            
             if (currentBlockingTime == 0)
             {
                 combatState = CombatState.Neutral;
+                blockingObject.SetActive(false);
             }
         }
     }
@@ -1017,7 +1023,8 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         switch (combatState)
         {
             case CombatState.Blocking:
-                
+                SetAnimation("Blocking");
+                return;
                 break;
             case CombatState.HitStun:
                 

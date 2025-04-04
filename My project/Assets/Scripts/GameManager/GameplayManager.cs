@@ -81,6 +81,7 @@ public class GameplayManager : MonoBehaviour
     private void PlayerWin(GameObject player)
     {
         playerWinPanel.SetActive(true);
+        
         WinScreenAnimatie.Instance.AssignWinner(player.GetComponent<PlayerController>().playerID);
     }
 
