@@ -5687,7 +5687,7 @@ GameObject:
   - component: {fileID: 1217974442}
   - component: {fileID: 1217974441}
   m_Layer: 5
-  m_Name: How to brawl (1)
+  m_Name: Exit game
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5711,7 +5711,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 187, y: -300}
+  m_AnchoredPosition: {x: 11, y: -291}
   m_SizeDelta: {x: 640, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1217974441
@@ -17781,7 +17781,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 378, y: -46}
+  m_AnchoredPosition: {x: 18, y: -176}
   m_SizeDelta: {x: 551.1, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4282438145730792260
@@ -22912,7 +22912,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 380, y: 100}
+  m_AnchoredPosition: {x: 389, y: 261}
   m_SizeDelta: {x: 640, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7115369507691739829
