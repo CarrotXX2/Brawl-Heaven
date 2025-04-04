@@ -3458,6 +3458,21 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2893369450893512090, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 229776664021734729}
+    - target: {fileID: 2893369450893512090, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ToggleFullscreen
+      objectReference: {fileID: 0}
+    - target: {fileID: 2893369450893512090, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: FullscreenToggle, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 2956547847053211216, guid: b87a4e160d60e5f4689410f9f600f776,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3661,8 +3676,30 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7110817060333445771, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 229776664021734729}
   m_SourcePrefab: {fileID: 100100000, guid: b87a4e160d60e5f4689410f9f600f776, type: 3}
+--- !u!1 &229776664021734728 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7110817060333445771, guid: b87a4e160d60e5f4689410f9f600f776,
+    type: 3}
+  m_PrefabInstance: {fileID: 229776664021734727}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &229776664021734729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229776664021734728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb87c1f62f747ba4196627c3e448ba29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &280764233595930456
 GameObject:
   m_ObjectHideFlags: 0

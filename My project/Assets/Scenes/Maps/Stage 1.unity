@@ -629,6 +629,21 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2893369450893512090, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1133632095}
+    - target: {fileID: 2893369450893512090, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ToggleFullscreen
+      objectReference: {fileID: 0}
+    - target: {fileID: 2893369450893512090, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: FullscreenToggle, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 2956547847053211216, guid: b87a4e160d60e5f4689410f9f600f776,
         type: 3}
       propertyPath: m_Pivot.x
@@ -832,7 +847,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7110817060333445771, guid: b87a4e160d60e5f4689410f9f600f776,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1133632095}
   m_SourcePrefab: {fileID: 100100000, guid: b87a4e160d60e5f4689410f9f600f776, type: 3}
 --- !u!1 &1133632091 stripped
 GameObject:
@@ -852,6 +871,24 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1133632090}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1133632094 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7110817060333445771, guid: b87a4e160d60e5f4689410f9f600f776,
+    type: 3}
+  m_PrefabInstance: {fileID: 1133632090}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1133632095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1133632094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb87c1f62f747ba4196627c3e448ba29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1451578736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1526,20 +1563,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 302427484531019425, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 733
-      objectReference: {fileID: 0}
     - target: {fileID: 2660932017853376510, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
       propertyPath: m_Name
       value: Winscreen
-      objectReference: {fileID: 0}
-    - target: {fileID: 4168928489990785172, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5333802955413964079, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
@@ -1641,34 +1668,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5980766986933570204, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_Pivot.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5980766986933570204, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5980766986933570204, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5980766986933570204, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -99.499954
-      objectReference: {fileID: 0}
-    - target: {fileID: 7089708571348568003, guid: 1a9d39929b6ce824790710970875c2aa,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 5738679882373794329, guid: 1a9d39929b6ce824790710970875c2aa, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1a9d39929b6ce824790710970875c2aa, type: 3}
