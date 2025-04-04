@@ -1348,6 +1348,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Winscreen
       objectReference: {fileID: 0}
+    - target: {fileID: 4168928489990785172, guid: 1a9d39929b6ce824790710970875c2aa,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5333802955413964079, guid: 1a9d39929b6ce824790710970875c2aa,
         type: 3}
       propertyPath: m_Pivot.x

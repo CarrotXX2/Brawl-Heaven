@@ -964,6 +964,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
         if (!touchedDeathZone)
         {
              stocks--;
+             playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerStockUI(playerID);
              rb.isKinematic = true;
         }
        
@@ -982,6 +983,7 @@ public class PlayerController : MonoBehaviour, IKnockbackable, IDamageable
     {
         totalDamageTaken = 0;
         playerIngameUI.GetComponent<PlayerUIManager>().UpdatePlayerHealthUI(playerID, totalDamageTaken);
+        
         knockbackVelocity = Vector2.zero;
         rb.velocity = Vector2.zero;
         

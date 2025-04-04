@@ -81,19 +81,19 @@ public class PlayerUIManager : MonoBehaviour
     
     public void UpdatePlayerStockUI(int playerID)
     {
-        if (playerID == 1)
+        if (playerID == 0)
         {
             p1UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
-        else if (playerID == 2)
+        else if (playerID == 1)
         {
             p2UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
-        else if (playerID == 3)
+        else if (playerID == 2)
         {
             p3UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
-        else if (playerID == 4)
+        else if (playerID == 3)
         {
             p4UI.GetComponentInChildren<EnhancedDamageDisplay>().DecrementLife();
         }
